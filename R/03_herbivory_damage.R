@@ -298,7 +298,7 @@ glm_herbivory_damage_dd
 # save result table
 glm_herbivory_damage_dd %>% 
   as_tibble() %>% 
-  write_csv("data/output/herbivory_damage_model_result.cvs")
+  write_csv("data/output/herbivory_damage_model_result.csv")
 
 # fit the best model (Hab,Treatment,Hab:Treatment)
 glm_herbivory_damage_select <-

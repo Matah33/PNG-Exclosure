@@ -291,7 +291,7 @@ glm_leaf_area_dd
 # save result table
 glm_leaf_area_dd %>% 
   as_tibble() %>% 
-  write_csv("data/output/leaf_area_model_result.cvs")
+  write_csv("data/output/leaf_area_model_result.csv")
 
 # fit the best model (Hab,Treatment,Hab:Treatment)
 glm_leaf_area_select <-
@@ -350,6 +350,6 @@ ggsave(
 glm_leaf_area_emmeans$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/leaf_area_pairwise_test.cvs")
+  write_csv("data/output/leaf_area_pairwise_test.csv")
 
 

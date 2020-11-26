@@ -328,7 +328,7 @@ glm_arthropod_abundance_dd
 # save result table
 glm_arthropod_abundance_dd %>% 
   as_tibble() %>% 
-  write_csv("data/output/arthropod_abundance_model_result.cvs")
+  write_csv("data/output/arthropod_abundance_model_result.csv")
 
 # two models have same AIC, lest compare R2
 glm_arthropod_abundance_m1 <-
@@ -408,4 +408,4 @@ ggsave(
 glm_arthropod_abundance_emmeans$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/arthropod_abundance_pairwise_test.cvs")
+  write_csv("data/output/arthropod_abundance_pairwise_test.csv")
