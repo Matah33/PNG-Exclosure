@@ -56,9 +56,8 @@ PDF_height <-  6
 
 
 # display.brewer.all()
-
 # Treatment pallete
-pallete_1 <-  brewer.pal(3,"Set1")
+pallete_1 <-  brewer.pal(3,"Pastel1")
 names(pallete_1) <-  
   dataset_fin$Treatment %>% 
   unique()
@@ -75,6 +74,14 @@ names(pallete_3) <-
   dataset_fin$Spec %>% 
   unique()
 
+# Guild pallete
+pallete_4 <-  brewer.pal(4,"Set1")
+names(pallete_4) <-  c("CHEW", "NR", "PRE", "SUC")
+
+
+# get the flat violin geom
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+
 #----------------------------------------------------------#
 # 4. Leaf area exporatory figures -----
 #----------------------------------------------------------#
@@ -86,18 +93,29 @@ ext_plot_01 <-
     aes(
       x = Treatment,
       y = leaf_area_total,
-      fill = Treatment )) +
-  geom_violin(
+      fill = Treatment,
+      col = Treatment)) +
+  geom_flat_violin(
     col = "gray30",
     alpha = 1/2,
-    trim = FALSE) +
+    trim = TRUE,
+    position = position_nudge(
+      x = 0.2,
+      y = 0)) +
+  geom_point(
+    position = position_jitter(width = 0.15),
+    alpha = 1/2,
+    size = 1)+
   geom_boxplot(
-    width=0.1,
-    col = "gray30")+
+    width=0.2,
+    outlier.shape = NA,
+    col = "gray30",
+    alpha = 1/2)+
   labs(
     x = "Treatment", 
     y = expression(paste("Total leaf area per tree individual (m" ^ 2,")"))) +
   scale_fill_manual(values = pallete_1) +
+  scale_color_manual(values = pallete_1) +
   theme(
     text = element_text(size = text_size),
     legend.position = "none"
@@ -120,18 +138,29 @@ ext_plot_02 <-
     aes(
       x = Hab,
       y = leaf_area_total,
-      fill = Hab )) +
-  geom_violin(
+      fill = Hab,
+      col = Hab)) +
+  geom_flat_violin(
     col = "gray30",
     alpha = 1/2,
-    trim = FALSE) +
+    trim = TRUE,
+    position = position_nudge(
+      x = 0.2,
+      y = 0)) +
+  geom_point(
+    position = position_jitter(width = 0.15),
+    alpha = 1/2,
+    size = 1)+
   geom_boxplot(
-    width=0.1,
-    col = "gray30") +
+    width=0.2,
+    outlier.shape = NA,
+    col = "gray30",
+    alpha = 1/2) +
   labs(
     x = "Habitat",
     y = expression(paste("Total leaf area per tree individual (m" ^ 2,")")) )+
   scale_fill_manual(values = pallete_2)+
+  scale_color_manual(values = pallete_2)+
   theme(
     text = element_text(size = text_size),
     legend.position = "none")
@@ -145,121 +174,50 @@ ggsave(
   height = PDF_height,
   units = "in")
 
-# combination
+
+# per species
 ext_plot_03 <- 
   dataset_fin %>% 
   ggplot(
     aes(
-      x = Hab,
+      x = Spec,
       y = leaf_area_total,
-      fill = Treatment)) +
-  geom_violin(
+      fill = Spec,
+      col = Spec)) +
+  geom_flat_violin(
     col = "gray30",
     alpha = 1/2,
-    trim = FALSE,
-    position = position_dodge(width = 0.5)) +
+    trim = TRUE,
+    position = position_nudge(
+      x = 0.2,
+      y = 0)) +
+  geom_point(
+    position = position_jitter(width = 0.15),
+    alpha = 1/2,
+    size = 1)+
   geom_boxplot(
-    width=0.1,
+    width=0.2,
+    outlier.shape = NA,
     col = "gray30",
-    position = position_dodge(width = 0.5)) +
+    alpha = 1/2) +
   labs(
-    x = "Habitat",
+    x = "Ficus species",
     y = expression(paste("Total leaf area per tree individual (m" ^ 2,")")) )+
-  scale_fill_manual(values = pallete_1)+
+  scale_fill_manual(values = pallete_3)+
+  scale_color_manual(values = pallete_3)+
   theme(
     text = element_text(size = text_size),
-    legend.position = "right")
+    legend.position = "none")
 
 plot(ext_plot_03)
 
 ggsave(
   "fig/leaf_area/ext_plot_03.pdf",
   ext_plot_03,
-  width = PDF_width*1.2,
-  height = PDF_height,
-  units = "in")
-
-# per species
-ext_plot_04 <- 
-  dataset_fin %>% 
-  ggplot(
-    aes(
-      x = Spec,
-      y = leaf_area_total,
-      fill = Spec )) +
-  geom_violin(
-    col = "gray30",
-    alpha = 1/2,
-    trim = FALSE) +
-  geom_boxplot(
-    width=0.1,
-    col = "gray30") +
-  labs(
-    x = "Ficus species",
-    y = expression(paste("Total leaf area per tree individual (m" ^ 2,")")) )+
-  scale_fill_manual(values = pallete_3)+
-  theme(
-    text = element_text(size = text_size),
-    legend.position = "none")
-
-plot(ext_plot_04)
-
-ggsave(
-  "fig/leaf_area/ext_plot_04.pdf",
-  ext_plot_04,
   width = PDF_width,
   height = PDF_height,
   units = "in")
 
-# full
-ext_plot_05 <- 
-  dataset_fin %>% 
-  ggplot(
-    aes(
-      x = Spec,
-      y = leaf_area_total,
-      fill = Treatment)) +
-  geom_violin(
-    col = "gray30",
-    alpha = 1/2,
-    trim = FALSE,
-    position = position_dodge(width = 0.5)) +
-  geom_boxplot(
-    width=0.1,
-    col = "gray30",
-    position = position_dodge(width = 0.5)) +
-  facet_wrap(~Hab,
-             scales = "free_x")+
-  labs(
-    x = "Habitat",
-    y = expression(paste("Total leaf area per tree individual (m" ^ 2,")")) )+
-  scale_fill_manual(values = pallete_1)+
-  theme(
-    text = element_text(size = text_size),
-    legend.position = "right") 
-
-# to color facet according to Habitat  
-ext_plot_05_e <- ggplot_gtable(ggplot_build(ext_plot_05))
-stripr <- which(grepl('strip-t', ext_plot_05_e$layout$name))
-
-for (i in stripr) {
-  if (all(class(ext_plot_05_e$grobs[[i]]) != "zeroGrob")){
-    j <- which(grepl('rect', ext_plot_05_e$grobs[[i]]$grobs[[1]]$childrenOrder))
-    k <- which(grepl('title', ext_plot_05_e$grobs[[i]]$grobs[[1]]$childrenOrder))
-    
-    ext_plot_05_e$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- 
-      pallete_2[ext_plot_05_e$grobs[[i]]$grobs[[1]]$children[[k]]$children[[1]]$label] 
-  }
-}
-
-plot(ext_plot_05_e)
-
-ggsave(
-  "fig/leaf_area/ext_plot_05.pdf",
-  ext_plot_05,
-  width = PDF_width*1.2,
-  height = PDF_height,
-  units = "in")
 
 
 #----------------------------------------------------------#
@@ -268,7 +226,9 @@ ggsave(
 
 dataset_leaf_area <-
   dataset_fin %>% 
-  mutate_if(is.character,as.factor)
+  mutate_if(is.character,as.factor) %>% 
+  dplyr::select( Hab, Treatment, Spec, leaf_area_total) %>% 
+  drop_na()
 
 # cretae full model with all interaction
 glm_leaf_area_full <-
@@ -278,6 +238,7 @@ glm_leaf_area_full <-
       na.action = "na.fail")
 
 summary(glm_leaf_area_full)
+check_model(glm_leaf_area_full) # do not know why it does not work
 check_collinearity(glm_leaf_area_full)
 check_normality(glm_leaf_area_full)
 check_heteroscedasticity(glm_leaf_area_full)
@@ -295,16 +256,18 @@ glm_leaf_area_dd %>%
 
 # fit the best model (Hab,Treatment,Hab:Treatment)
 glm_leaf_area_select <-
-  glm(leaf_area_total ~ Hab*Treatment,
-      data=dataset_fin,
+  glm(leaf_area_total ~ Hab + Treatment + Hab:Treatment,
+      data = dataset_leaf_area,
       family = "Gamma",
       na.action = "na.fail")
 
 summary(glm_leaf_area_select)
+r2(glm_leaf_area_select)
+check_model(glm_leaf_area_select)
 check_collinearity(glm_leaf_area_select)
 check_normality(glm_leaf_area_select)
 check_heteroscedasticity(glm_leaf_area_select)
-r2(glm_leaf_area_select)
+qplot(residuals(glm_leaf_area_select))
 
 # calculate emmeans
 glm_leaf_area_emmeans <-
@@ -320,23 +283,35 @@ glm_leaf_area_emmeans$emmeans %>%
     aes(
       x = Hab,
       y = response,
-      col = Treatment,
-      ymin =  asymp.LCL,
-      ymax = asymp.UCL)) + 
+      col = Treatment)) + 
+  geom_point(
+    data = dataset_leaf_area,
+    aes(y = leaf_area_total),
+    alpha = 1/2,
+    position = position_jitterdodge(
+      dodge.width = 0.5,
+      jitter.width = 0.15)) +
   geom_errorbar(
+    aes(
+      ymin =  asymp.LCL,
+      ymax = asymp.UCL),
     width=0.2,
-    position = position_dodge(width = 0.5),
-    size=0.1)+
+    position = position_dodge(width = 0.5, preserve = "single"),
+    size=1
+    )+
   geom_point(
     shape = 0,
-    position = position_dodge(width = 0.5)) +
+    position = position_dodge(width = 0.5),
+    size = 3) +
   labs(
     x = "Habitat",
-    y = expression(paste("Estimated total leaf area per tree individual (m" ^ 2,")")) ) +
+    y = expression(paste("Total leaf area per tree individual (m" ^ 2,")")) ) +
   scale_color_manual(values = pallete_1) +
   theme(
     text = element_text(size = text_size),
     legend.position = "right")
+
+plot(model_plot_01)
 
 # save pdf
 ggsave(
@@ -351,5 +326,3 @@ glm_leaf_area_emmeans$contrasts %>%
   as_tibble() %>% 
   arrange(p.value) %>% 
   write_csv("data/output/leaf_area_pairwise_test.csv")
-
-

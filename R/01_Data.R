@@ -30,8 +30,8 @@ library(tidyverse)
 # 2. Import data and merge -----
 #----------------------------------------------------------#
 
-dataset_arth <-  
-  readxl::read_xlsx("data/input/PNGmerge.xlsx")  %>% 
+dataset_tree_spec <-  
+  readxl::read_xlsx("data/input/Tree_main.xlsx")  %>% 
   mutate(Tree = as.character(Tree))
 
 dataset_leaf <-  
@@ -41,6 +41,7 @@ dataset_leaf <-
     Ideal_area = `Ideal Area`) %>% 
   mutate(Tree = as.character(Tree))
 
+# sum leaf area per tree
 dataset_leaf_sum <-
   dataset_leaf %>% 
     mutate(Percentage = (Herbivory/Ideal_area)*100) %>% 
@@ -52,12 +53,85 @@ dataset_leaf_sum <-
       herbivory_percentage_mean = mean(Percentage)
     )
 
-dataset_fin <-
+dataset_arth <-  
+  readxl::read_xlsx("data/input/INV_clean.xlsx") %>% 
+  rename(Tree = Sample,
+         Size = 'Size (mm)') %>% 
+  mutate(Tree = as.character(Tree))
+
+# arthropod abunance
+dataset_arth_sum_abund <-
   dataset_arth %>% 
+  group_by(Site, Treatment, Tree, Guild) %>% 
+  summarise(
+    .groups = "keep",
+    Abundance = n()
+  ) %>% 
+  ungroup() %>% 
+  pivot_wider(names_from = Guild, values_from = Abundance) %>% 
+  replace(is.na(.), 0)
+  
+dataset_arth_sum_abund <-
+  dataset_arth_sum_abund %>% 
+  mutate(Total_abundance = dataset_arth_sum_abund %>% 
+           dplyr::select(
+             dataset_arth$Guild %>% 
+               unique()) %>% 
+           rowSums())
+
+# artropod sizes
+dataset_arth_mean_size_guild <-
+  dataset_arth %>% 
+  group_by(Site, Treatment, Tree, Guild) %>% 
+  summarise(
+    .groups = "keep",
+    Mean_size = mean(Size)
+  ) %>% 
+  ungroup() %>%
+  mutate(Guild = paste0("size_",Guild)) %>% 
+  pivot_wider(names_from = Guild, values_from = Mean_size)
+
+dataset_arth_mean_size_total <-
+dataset_arth %>% 
+  group_by(Site, Treatment, Tree) %>% 
+  summarise(
+    .groups = "keep",
+    Mean_size = mean(Size)
+  ) %>% 
+  ungroup()
+
+
+# merging artropods data
+dataset_arth_final <-
+  dataset_arth_sum_abund %>% 
+  left_join(
+    dataset_arth_mean_size_guild,
+    by = c("Site", "Treatment", "Tree")) %>% 
+  left_join(
+    dataset_arth_mean_size_total,
+    by = c("Site", "Treatment", "Tree")) %>% 
+  mutate(
+    Plot = case_when(
+      Site == "Baiteta_" ~ "BAI",
+      Site == "Wanang 1_" ~ "WA1",
+      Site == "Wanang 3_" ~ "WA3",
+      Site == "YAW_" ~ "YAW"
+    )
+  )
+
+
+# merge all together
+dataset_fin <-
+  dataset_tree_spec %>% 
   left_join(
     dataset_leaf_sum,
-    by = c("Plot", "Treatment", "Tree")
+    by = c("Plot", "Treatment", "Tree")) %>% 
+  left_join(
+    dataset_arth_final,
+    by = c("Plot", "Treatment", "Tree") 
   )
+
+
 
 #----------------------------------------------------------#
 # 3. save data  -----
