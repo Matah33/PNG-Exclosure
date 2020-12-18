@@ -111,8 +111,6 @@ dataset_guild_size <-
 
 summary(dataset_guild_size)
 
-
-
 #----------------------------------------------------------#
 # 5. Exploratory figures -----
 #----------------------------------------------------------#
@@ -330,13 +328,17 @@ glm_invertebrates_guild_chew_m2 <-
     na.action = "na.fail")
 
 
-na.action = "na.fail")
-
-
 # compare models
 compare_performance(
   glm_invertebrates_guild_chew_m1, glm_invertebrates_guild_chew_m2,
   rank = TRUE)
+
+# compare models
+compare_performance(
+  glm_invertebrates_guild_chew_m1, glm_invertebrates_guild_chew_m2,
+  rank = TRUE)  %>% 
+  as_tibble() %>% 
+  write_csv("data/output/guild_size_chew_model_performance_comparison.csv")
 
 
 glm_invertebrates_guild_chew_select <- glm_invertebrates_guild_chew_m2
@@ -391,7 +393,7 @@ glm_invertebrates_guild_chew_emmeans_treat <-
     
     labs(
       x = "Treatment",
-      y = "Mean size of arthropod"),
+      y = "Mean size of arthropod",
       title = "CHEW") +
     scale_color_manual(values = pallete_1) +
     scale_fill_manual(values = pallete_1) +
@@ -741,6 +743,14 @@ compare_performance(
   glm_invertebrates_guild_suc_m3, glm_invertebrates_guild_suc_m4,
   rank = T
 )
+
+
+compare_performance(
+  glm_invertebrates_guild_suc_m1, glm_invertebrates_guild_suc_m2,
+  glm_invertebrates_guild_suc_m3, glm_invertebrates_guild_suc_m4,
+  rank = T) %>% 
+  as_tibble() %>% 
+  write_csv("data/output/guild_size_suc_model_performance_comparison.csv")
 
 glm_invertebrates_guild_suc_select <- glm_invertebrates_guild_suc_m1
 

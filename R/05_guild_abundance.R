@@ -450,6 +450,12 @@ compare_performance(
 )
 
 
+compare_performance(
+  glm_invertebrates_guild_pre_m1, glm_invertebrates_guild_pre_m2,
+  rank = T) %>% 
+  as_tibble() %>% 
+  write_csv("data/output/invertebrates_pre_model_performance_comparison.csv")
+
 glm_invertebrates_guild_pre_select <- glm_invertebrates_guild_pre_m2
 
 
@@ -710,6 +716,12 @@ compare_performance(
   glm_invertebrates_guild_suc_m1, glm_invertebrates_guild_suc_m2,
   rank = T
 )
+
+compare_performance(
+  glm_invertebrates_guild_suc_m1, glm_invertebrates_guild_suc_m2,
+  rank = T) %>% 
+  as_tibble() %>% 
+  write_csv("data/output/invertebrates_suc_model_performance_comparison.csv")
 
 glm_invertebrates_guild_suc_select <- glm_invertebrates_guild_suc_m2
 

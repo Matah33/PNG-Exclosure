@@ -308,6 +308,15 @@ compare_performance(
   glm_leaf_m1, glm_leaf_m2, glm_leaf_m3, glm_leaf_m4,
   rank = TRUE)
 
+
+# compare models
+compare_performance(
+  glm_leaf_m1, glm_leaf_m2, glm_leaf_m3, glm_leaf_m4,
+  rank = TRUE) %>% 
+  as_tibble() %>% 
+  write_csv("data/output/mean_size_model_performance_comparison.csv")
+
+
 # m1 is better
 glm_mean_size_select <- glm_leaf_m2
 

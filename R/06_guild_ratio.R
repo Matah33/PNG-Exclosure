@@ -348,7 +348,15 @@ compare_performance(
   rank = T
 )
 
-glm_invertebrates_guild_chew_select <- glm_invertebrates_guild_chew_m1
+compare_performance(
+  glm_invertebrates_guild_chew_m1, glm_invertebrates_guild_chew_m2,
+  rank = T) %>% 
+  as_tibble() %>% 
+  write_csv("data/output/invertebrates_ratio_chew_model_performance_comparison.csv")
+
+
+
+aglm_invertebrates_guild_chew_select <- glm_invertebrates_guild_chew_m1
   
 summary(glm_invertebrates_guild_chew_select)
 check_model(glm_invertebrates_guild_chew_select)
@@ -582,6 +590,12 @@ compare_performance(
   glm_invertebrates_guild_pre_m1, glm_invertebrates_guild_pre_m2,
   rank = T
 )
+
+compare_performance(
+  glm_invertebrates_guild_pre_m1, glm_invertebrates_guild_pre_m2,
+  rank = T )%>% 
+  as_tibble() %>% 
+  write_csv("data/output/invertebrates_ratio_pre_model_performance_comparison.csv")
 
 glm_invertebrates_guild_pre_select <- glm_invertebrates_guild_pre_m1
 

@@ -288,7 +288,13 @@ glm_leaf_m2 <-
 # compare models
 compare_performance(
   glm_leaf_m1, glm_leaf_m2,
-  rank = TRUE)
+  rank = TRUE) 
+
+compare_performance(
+  glm_leaf_m1, glm_leaf_m2,
+  rank = TRUE) %>% 
+  as_tibble() %>% 
+  write_csv("data/output/leaf_area_model_performance_comparison.csv")
 
 # m1 is better
 glm_leaf_area_select <- glm_leaf_m1
