@@ -351,7 +351,7 @@ ggsave(
 glm_herbivory_damage_emmeans_hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_hab.cvs")
+  write_csv("data/output/herbivory_damage_pairwise_test_hab.csv")
 
 
 # calculate emmeans Spec
@@ -413,7 +413,7 @@ ggsave(
 glm_herbivory_damage_emmeans_Spec$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_Spec.cvs")
+  write_csv("data/output/herbivory_damage_pairwise_test_Spec.csv")
 
 
 # calculate emmeans Treatment
@@ -475,5 +475,5 @@ ggsave(
 glm_herbivory_damage_emmeans_Treatment$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_Treatment.cvs")
+  write_csv("data/output/herbivory_damage_pairwise_test_Treatment.csv")
 
