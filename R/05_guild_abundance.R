@@ -10,84 +10,7 @@
 #
 #----------------------------------------------------------#
 
-#----------------------------------------------------------#
-# 1. Load libraries and functions -----
-#----------------------------------------------------------#
-
-# delete existing workspace to start clean
-rm(list = ls())
-
-# Package version control
-library(renv)
-# renv::init()
-# renv::snapshot(lockfile = "data/lock/revn.lock")
-renv::restore(lockfile = "data/lock/revn.lock")
-
-# libraries
-library(tidyverse)
-library(ggpubr)
-library(RColorBrewer)
-library(glmmTMB)
-library(MuMIn)
-library(emmeans)
-library(performance)
-
-#----------------------------------------------------------#
-# 2. Import data -----
-#----------------------------------------------------------#
-
-list_files <-  list.files("data/output/")
-
-if(any(list_files %in% "dataset_fin.csv")) {
-  dataset_fin <-  read.csv("data/output/dataset_fin.csv") %>% 
-    as_tibble()
-} else {
-  source("R/01_Data.R")
-}
-
-#----------------------------------------------------------#
-# 3. graphical properties definition  -----
-#----------------------------------------------------------#
-
-theme_set(theme_classic())
-text_size <-  10
-
-PDF_width <-  10
-PDF_height <-  6
-
-abundance_log_breaks <-  
-  c(0,1,10,100,
-    paste0("1e", seq(1:15)) %>% 
-      noquote()) %>%  
-  as.numeric()
-
-# display.brewer.all()
-
-# Treatment pallete
-pallete_1 <-  brewer.pal(3,"Pastel1")
-names(pallete_1) <-  
-  dataset_fin$Treatment %>% 
-  unique()
-
-# habitat pallete
-pallete_2 <-  brewer.pal(4,"Set2")
-names(pallete_2) <-  
-  dataset_fin$Hab %>% 
-  unique()
-
-# Species pallete
-pallete_3 <-  brewer.pal(4,"Accent")
-names(pallete_3) <-  
-  dataset_fin$Spec %>% 
-  unique()
-
-# Guild pallete
-pallete_4 <-  brewer.pal(4,"Set1")
-names(pallete_4) <-  c("CHEW", "NR", "PRE", "SUC")
-
-
-# get the flat violin geom
-source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+source("R/00_config.R")
 
 #----------------------------------------------------------#
 # 4. calculation of Abundance -----
@@ -377,8 +300,61 @@ glm_invertebrates_guild_chew_emmeans_treat <-
 glm_invertebrates_guild_chew_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_chew_pairwise_test.csv")
+  write_csv("data/output/invertebrates_chew_pairwise_test_treat.csv")
 
+glm_invertebrates_guild_chew_emmeans_Hab <-
+  emmeans(
+    glm_invertebrates_guild_chew_select,
+    pairwise ~ Hab,
+    type = "response") 
+
+
+(model_plot_chew_02 <-
+    glm_invertebrates_guild_chew_emmeans_Hab$emmeans %>% 
+    as_tibble() %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y = response,
+        col = Hab,
+        fill = Hab)) +
+    
+    geom_point(
+      data = dataset_guild_chew,
+      aes(y = abundance_per_leaf_area),
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    geom_errorbar(
+      aes(
+        ymin =  lower.CL,
+        ymax = upper.CL),
+      width = 0.2,
+      position = position_dodge(width = 0.5, preserve = "single"),
+      size = 1)+
+    
+    geom_point(
+      shape = 0,
+      size = 3,
+      position = position_dodge(width = 0.5)) +
+    
+    labs(
+      x = "Habitat",
+      y = expression(paste("Invertebrates abundance per m" ^ 2)),
+      title = "CHEW") +
+    scale_color_manual(values = pallete_2) +
+    scale_fill_manual(values = pallete_2) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+# save the pairwise test 
+glm_invertebrates_guild_chew_emmeans_Hab$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/invertebrates_chew_pairwise_test_Hab.csv")
 
 #----------------------------------------------------------#
 # 7. PRE -----
@@ -409,7 +385,7 @@ glm_invertebrates_guild_pre_full <-
 summary(glm_invertebrates_guild_pre_full)
 check_model(glm_invertebrates_guild_pre_full) 
 model_performance(glm_invertebrates_guild_pre_full)
-check_distribution(glm_invertebrates_guild_pre_full)
+check_distribution(glm_invertebrates_guild_pre_full)  # Gamma distribution will not converge
 qplot(residuals(glm_invertebrates_guild_pre_full))
 
 # calculate
@@ -522,7 +498,64 @@ glm_invertebrates_guild_pre_emmeans_treat <-
 glm_invertebrates_guild_pre_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_pre_pairwise_test.csv")
+  write_csv("data/output/invertebrates_pre_pairwise_test_treat.csv")
+
+
+
+
+glm_invertebrates_guild_pre_emmeans_Hab <-
+  emmeans(
+    glm_invertebrates_guild_pre_select,
+    pairwise ~ Hab,
+    type = "response") 
+
+
+(model_plot_pre_02 <-
+    glm_invertebrates_guild_pre_emmeans_Hab$emmeans %>% 
+    as_tibble() %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y = response,
+        col = Hab,
+        fill = Hab)) +
+    
+    geom_point(
+      data = dataset_guild_pre,
+      aes(y = abundance_per_leaf_area),
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    geom_errorbar(
+      aes(
+        ymin =  lower.CL,
+        ymax = upper.CL),
+      width = 0.2,
+      position = position_dodge(width = 0.5, preserve = "single"),
+      size = 1)+
+    
+    geom_point(
+      shape = 0,
+      size = 3,
+      position = position_dodge(width = 0.5)) +
+    
+    labs(
+      x = "Habitat",
+      y = expression(paste("Invertebrates abundance per m" ^ 2)),
+      title = "PRE") +
+    scale_color_manual(values = pallete_2) +
+    scale_fill_manual(values = pallete_2) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+# save the pairwise test 
+glm_invertebrates_guild_pre_emmeans_Hab$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/invertebrates_pre_pairwise_test_hab.csv")
 
 
 #----------------------------------------------------------#
@@ -645,7 +678,34 @@ glm_invertebrates_guild_nr_emmeans_treat <-
 glm_invertebrates_guild_nr_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_nr_pairwise_test.csv")
+  write_csv("data/output/invertebrates_nr_pairwise_test_treat.csv")
+
+
+
+(model_plot_nr_02 <-
+    dataset_guild_nr %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y = abundance_per_leaf_area,
+        col = Hab,
+        fill = Hab)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    labs(
+      x = "Habitat",
+      y = expression(paste("Invertebrates abundance per m" ^ 2)),
+      title = "NR") +
+    scale_color_manual(values = pallete_2) +
+    scale_fill_manual(values = pallete_2) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
 
 
 #----------------------------------------------------------#
@@ -700,7 +760,7 @@ glm_invertebrates_guild_suc_dd %>%
 
 glm_invertebrates_guild_suc_m1 <- 
   glmmTMB(
-    abundance_per_leaf_area ~ 1,
+    abundance_per_leaf_area ~ (+1),
     data = dataset_guild_suc,
     family = tweedie(),
     na.action = "na.fail")
@@ -723,55 +783,33 @@ compare_performance(
   as_tibble() %>% 
   write_csv("data/output/invertebrates_suc_model_performance_comparison.csv")
 
-glm_invertebrates_guild_suc_select <- glm_invertebrates_guild_suc_m2
+glm_invertebrates_guild_suc_select <- glm_invertebrates_guild_suc_m1
 
+# ->  no precictor !!
 
-summary(glm_invertebrates_guild_suc_select)
-check_model(glm_invertebrates_guild_suc_select)
-model_performance(glm_invertebrates_guild_suc_select)
-check_distribution(glm_invertebrates_guild_suc_select)
-qplot(residuals(glm_invertebrates_guild_suc_select))
+# summary(glm_invertebrates_guild_suc_select)
+# check_model(glm_invertebrates_guild_suc_select)
+# model_performance(glm_invertebrates_guild_suc_select)
+# check_distribution(glm_invertebrates_guild_suc_select)
+# qplot(residuals(glm_invertebrates_guild_suc_select))
 
 # 9.2. plot -----
 
-# calculate emmeans
-glm_invertebrates_guild_suc_emmeans_treat <-
-  emmeans(
-    glm_invertebrates_guild_suc_select,
-    pairwise ~ Treatment,
-    type = "response") 
-
 
 (model_plot_suc_01 <-
-    glm_invertebrates_guild_suc_emmeans_treat$emmeans %>% 
-    as_tibble() %>% 
+   dataset_guild_suc %>% 
     ggplot(
       aes(
         x = Treatment,
-        y = response,
+        y = abundance_per_leaf_area,
         col = Treatment,
         fill = Treatment)) +
     
     geom_point(
-      data = dataset_guild_suc,
-      aes(y = abundance_per_leaf_area),
       alpha = 1,
       position = position_jitterdodge(
         dodge.width = 0.5,
         jitter.width = 0.15)) +
-    
-    geom_errorbar(
-      aes(
-        ymin =  lower.CL,
-        ymax = upper.CL),
-      width = 0.2,
-      position = position_dodge(width = 0.5, preserve = "single"),
-      size = 1)+
-    
-    geom_point(
-      shape = 0,
-      size = 3,
-      position = position_dodge(width = 0.5)) +
     
     labs(
       x = "Treatment",
@@ -783,13 +821,30 @@ glm_invertebrates_guild_suc_emmeans_treat <-
       text = element_text(size = text_size),
       legend.position = "none"))
 
-
-
-# save the pairwise test 
-glm_invertebrates_guild_suc_emmeans_treat$contrasts %>% 
-  as_tibble() %>% 
-  arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_suc_pairwise_test.csv")
+(model_plot_suc_02 <-
+    dataset_guild_suc %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y = abundance_per_leaf_area,
+        col = Hab,
+        fill = Hab)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    labs(
+      x = "Habitat",
+      y = expression(paste("Invertebrates abundance per m" ^ 2)),
+      title = "SUC") +
+    scale_color_manual(values = pallete_2) +
+    scale_fill_manual(values = pallete_2) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
 
 #----------------------------------------------------------#
 # 10. Summary -----
@@ -829,11 +884,58 @@ model_plot_guild_01 <-
       size = text_size)
   )
 
+plot(model_plot_guild_01)
 
 # save pdf
 ggsave(
   "fig/guild_abundance/model_plot_01.pdf",
   model_plot_guild_01,
+  width = PDF_width,
+  height = PDF_height,
+  units = "in")
+
+
+
+model_plot_guild_02 <- 
+  ggarrange(
+    
+    model_plot_chew_02 + 
+      scale_y_continuous(limits = c(0,150)) +
+      rremove("xylab"),
+    
+    model_plot_pre_02 +
+      scale_y_continuous(limits = c(0,150)) +
+      rremove("xylab") +
+      rremove("y.text"),
+    
+    model_plot_nr_02 + 
+      scale_y_continuous(limits = c(0,150)) +
+      rremove("xylab") +
+      rremove("y.text"),
+    
+    model_plot_suc_02 + 
+      scale_y_continuous(limits = c(0,150)) +
+      rremove("xylab") + 
+      rremove("y.text"),
+    
+    nrow = 1,
+    align = "hv" ) %>% 
+  annotate_figure(
+    left = text_grob(
+      expression(paste("Invertebrates abundance per m" ^ 2)),
+      size = text_size,
+      rot = 90),
+    bottom = text_grob(
+      "Habitat",
+      size = text_size)
+  )
+
+plot(model_plot_guild_02)
+
+# save pdf
+ggsave(
+  "fig/guild_abundance/model_plot_02.pdf",
+  model_plot_guild_02,
   width = PDF_width,
   height = PDF_height,
   units = "in")

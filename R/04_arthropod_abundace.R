@@ -10,84 +10,7 @@
 #
 #----------------------------------------------------------#
 
-#----------------------------------------------------------#
-# 1. Load libraries and functions -----
-#----------------------------------------------------------#
-
-# delete existing workspace to start clean
-rm(list = ls())
-
-# Package version control
-library(renv)
-# renv::init()
-# renv::snapshot(lockfile = "data/lock/revn.lock")
-renv::restore(lockfile = "data/lock/revn.lock")
-
-# libraries
-library(tidyverse)
-library(ggpubr)
-library(RColorBrewer)
-library(MuMIn)
-library(emmeans)
-library(performance)
-library(glmmTMB)
-
-#----------------------------------------------------------#
-# 2. Import data -----
-#----------------------------------------------------------#
-
-list_files <-  list.files("data/output/")
-
-if(any(list_files %in% "dataset_fin.csv")) {
-  dataset_fin <-  read.csv("data/output/dataset_fin.csv") %>% 
-    as_tibble()
-} else {
-  source("R/01_Data.R")
-}
-
-#----------------------------------------------------------#
-# 3. graphical properties definition  -----
-#----------------------------------------------------------#
-
-theme_set(theme_classic())
-text_size <-  10
-
-PDF_width <-  10
-PDF_height <-  6
-
-abundance_log_breaks <-  
-  c(0,1,10,100,
-    paste0("1e", seq(1:15)) %>% 
-      noquote()) %>%  
-  as.numeric()
-
-# display.brewer.all()
-
-# Treatment pallete
-pallete_1 <-  brewer.pal(3,"Pastel1")
-names(pallete_1) <-  
-  dataset_fin$Treatment %>% 
-  unique()
-
-# habitat pallete
-pallete_2 <-  brewer.pal(4,"Set2")
-names(pallete_2) <-  
-  dataset_fin$Hab %>% 
-  unique()
-
-# Species pallete
-pallete_3 <-  brewer.pal(4,"Accent")
-names(pallete_3) <-  
-  dataset_fin$Spec %>% 
-  unique()
-
-# Guild pallete
-pallete_4 <-  brewer.pal(4,"Set1")
-names(pallete_4) <-  c("CHEW", "NR", "PRE", "SUC")
-
-
-# get the flat violin geom
-source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+source("R/00_config.R")
 
 #----------------------------------------------------------#
 # 4. calculation of Abundance -----
@@ -318,19 +241,17 @@ summary(dataset_abundance_model)
 
 # cretae full model with all interaction
 glm_invertebrates_abundance_full <-
-  glm(
+  glmmTMB(
     abundance_per_leaf_area ~ Hab * Treatment * Spec,
     data = dataset_abundance_model,
-    family = Gamma(),
+    family = gaussian(link = "log"),
     na.action = "na.fail")
 
 
 summary(glm_invertebrates_abundance_full)
-check_model(glm_invertebrates_abundance_full)  # do not know why does not work
+check_model(glm_invertebrates_abundance_full)
 check_distribution(glm_invertebrates_abundance_full)  
-# suggested lognormal distribution does not work (residuals does not have normal distr)
 check_heteroscedasticity(glm_invertebrates_abundance_full) 
-check_normality(glm_invertebrates_abundance_full)
 qplot(residuals(glm_invertebrates_abundance_full))
 
 # compute all posible combinations
@@ -351,17 +272,17 @@ glm_invertebrates_abundance_dd %>%
 
 
 glm_invertebrates_abundance_select <-   
-  glm(
+  glmmTMB(
     abundance_per_leaf_area ~ Hab + Treatment ,
     data = dataset_abundance_model,
-    family = Gamma(),
+    family = gaussian(link = "log"),
     na.action = "na.fail")
 
 summary(glm_invertebrates_abundance_select)
 check_model(glm_invertebrates_abundance_select)
+check_distribution(glm_invertebrates_abundance_select)
 model_performance(glm_invertebrates_abundance_select)
 check_heteroscedasticity(glm_invertebrates_abundance_select)
-check_normality(glm_invertebrates_abundance_select)
 qplot(residuals(glm_invertebrates_abundance_select))
 
 
@@ -398,8 +319,8 @@ glm_invertebrates_abundance_emmeans_Hab <-
     
     geom_errorbar(
       aes(
-        ymin =  asymp.LCL,
-        ymax = asymp.UCL),
+        ymin =  lower.CL,
+        ymax = upper.CL),
       position = position_dodge(width = 0.5, preserve = "single"),
       width = 0.2,
       size = 1)+

@@ -11,26 +11,10 @@
 #----------------------------------------------------------#
 
 #----------------------------------------------------------#
-# 1. Load libraries and functions -----
+# 1. Import data -----
 #----------------------------------------------------------#
 
-# delete existing workspace to start clean
-rm(list = ls())
-
-# Package version control
-library(renv)
-# renv::init()
-# renv::snapshot(lockfile = "data/lock/revn.lock")
-renv::restore(lockfile = "data/lock/revn.lock")
-
-# libraries
-library(tidyverse)
-
-#----------------------------------------------------------#
-# 2. Import data and merge -----
-#----------------------------------------------------------#
-
-# 2.1 desing data-----
+# 1.1 desing data-----
 dataset_desing <-  
   readxl::read_xlsx("data/input/data_input_clean.xlsx","Design_data")  %>% 
   mutate(TreeID = as.character(TreeID))
@@ -44,7 +28,7 @@ dataset_desing <-
     leaf_area_total = WeightTot * LA_W_ratio
   ) 
 
-# 2.2 herbivory data -----
+# 1.2 herbivory data -----
 dataset_herbivory <-  
   readxl::read_xlsx("data/input/data_input_clean.xlsx","Leaf_frames")  %>% 
   rename(
@@ -65,7 +49,7 @@ dataset_herbivory_sum <-
       herbivory_percentage_mean = mean(Percentage)
     )
 
-# 2.3 invertebrates data -----
+# 1.3 invertebrates data -----
 dataset_invertebrates <-  
   readxl::read_xlsx("data/input/data_input_clean.xlsx","Invertebrates")  %>% 
   rename(
@@ -131,7 +115,7 @@ dataset_invertebrates_final <-
     dataset_invertebrates_mean_size_total,
     by = c("Plot", "Treatment", "TreeID"))
 
-# 2.4 summary -----
+# 1.4 summary -----
 # merge all together
 dataset_fin <-
   dataset_desing %>% 
@@ -146,7 +130,7 @@ dataset_fin <-
 
 
 #----------------------------------------------------------#
-# 3. save data  -----
+# 2. save data  -----
 #----------------------------------------------------------#
 
 write_csv(

@@ -10,78 +10,7 @@
 #
 #----------------------------------------------------------#
 
-#----------------------------------------------------------#
-# 1. Load libraries and functions -----
-#----------------------------------------------------------#
-
-# delete existing workspace to start clean
-rm(list = ls())
-
-# Package version control
-library(renv)
-# renv::init()
-# renv::snapshot(lockfile = "data/lock/revn.lock")
-renv::restore(lockfile = "data/lock/revn.lock")
-
-# libraries
-library(tidyverse)
-library(ggpubr)
-library(RColorBrewer)
-library(MuMIn)
-library(emmeans)
-library(performance)
-library(glmmTMB)
-
-#----------------------------------------------------------#
-# 2. Import data -----
-#----------------------------------------------------------#
-
-list_files <-  list.files("data/output/")
-
-if(any(list_files %in% "dataset_fin.csv")) {
-  dataset_fin <-  read.csv("data/output/dataset_fin.csv") %>% 
-    as_tibble()
-} else {
-  source("R/01_Data.R")
-}
-
-#----------------------------------------------------------#
-# 3. graphical properties definition  -----
-#----------------------------------------------------------#
-
-theme_set(theme_classic())
-text_size <-  10
-
-PDF_width <-  10
-PDF_height <-  6
-
-
-# display.brewer.all()
-# Treatment pallete
-pallete_1 <-  brewer.pal(3,"Pastel1")
-names(pallete_1) <-  
-  dataset_fin$Treatment %>% 
-  unique()
-
-# habitat pallete
-pallete_2 <-  brewer.pal(4,"Set2")
-names(pallete_2) <-  
-  dataset_fin$Hab %>% 
-  unique()
-
-# Species pallete
-pallete_3 <-  brewer.pal(4,"Accent")
-names(pallete_3) <-  
-  dataset_fin$Spec %>% 
-  unique()
-
-# Guild pallete
-pallete_4 <-  brewer.pal(4,"Set1")
-names(pallete_4) <-  c("CHEW", "NR", "PRE", "SUC")
-
-
-# get the flat violin geom
-source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+source("R/00_config.R")
 
 #----------------------------------------------------------#
 # 4. Leaf area exporatory figures -----
@@ -241,17 +170,16 @@ summary(dataset_leaf_area)
 
 # cretae full model with all interaction
 glm_leaf_area_full <-
-  glm(leaf_area_total ~ Hab * Treatment * Spec,
+  glmmTMB(leaf_area_total ~ Hab * Treatment * Spec,
       data = dataset_leaf_area,
       family = Gamma(),
       na.action = "na.fail")
 
 summary(glm_leaf_area_full)
-check_model(glm_leaf_area_full) # do not know why it does not work
+check_model(glm_leaf_area_full) 
 check_distribution(glm_leaf_area_full)
 model_performance(glm_leaf_area_full)
 qplot(residuals(glm_leaf_area_full))
-check_normality(glm_leaf_area_full)
 check_heteroscedasticity(glm_leaf_area_full)
 
 # compute all posible combinations
@@ -273,13 +201,13 @@ glm_leaf_area_dd %>%
 
 # fit the all the models with similar parsimony
 glm_leaf_m1 <- 
-  glm(leaf_area_total ~ Hab,
+  glmmTMB(leaf_area_total ~ Hab,
       data = dataset_leaf_area,
       family = Gamma(),
       na.action = "na.fail")
 
 glm_leaf_m2 <- 
-  glm(leaf_area_total ~ Hab + Treatment,
+  glmmTMB(leaf_area_total ~ Hab + Treatment,
       data = dataset_leaf_area,
       family = Gamma(),
       na.action = "na.fail")
@@ -303,7 +231,6 @@ summary(glm_leaf_area_select)
 check_model(glm_leaf_area_select)
 model_performance(glm_leaf_area_select)
 check_heteroscedasticity(glm_leaf_area_select)
-check_normality(glm_leaf_area_select)
 qplot(residuals(glm_leaf_area_select))
 
 
@@ -333,8 +260,8 @@ glm_leaf_area_emmeans <-
   
   geom_errorbar(
     aes(
-      ymin =  asymp.LCL,
-      ymax = asymp.UCL),
+      ymin =  lower.CL,
+      ymax = upper.CL),
     width=0.2,
     position = position_dodge(width = 0.5, preserve = "single"),
     size = 1)+

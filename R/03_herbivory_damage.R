@@ -10,80 +10,7 @@
 #
 #----------------------------------------------------------#
 
-#----------------------------------------------------------#
-# 1. Load libraries and functions -----
-#----------------------------------------------------------#
-
-# delete existing workspace to start clean
-rm(list = ls())
-
-# Package version control
-library(renv)
-# renv::init()
-# renv::snapshot(lockfile = "data/lock/revn.lock")
-renv::restore(lockfile = "data/lock/revn.lock")
-
-# libraries
-library(tidyverse)
-library(ggpubr)
-library(RColorBrewer)
-library(MuMIn)
-library(emmeans)
-library(glmmTMB)
-library(performance)
-
-#----------------------------------------------------------#
-# 2. Import data -----
-#----------------------------------------------------------#
-
-list_files <-  list.files("data/output/")
-
-if(any(list_files %in% "dataset_fin.csv")) {
-  dataset_fin <-  read.csv("data/output/dataset_fin.csv") %>% 
-    as_tibble()
-} else {
-  source("R/01_Data.R")
-}
-
-#----------------------------------------------------------#
-# 3. graphical properties definition  -----
-#----------------------------------------------------------#
-
-theme_set(theme_classic())
-text_size <-  10
-
-PDF_width <-  10
-PDF_height <-  6
-
-
-# display.brewer.all()
-
-# Treatment pallete
-pallete_1 <-  brewer.pal(3,"Pastel1")
-names(pallete_1) <-  
-  dataset_fin$Treatment %>% 
-  unique()
-
-# habitat pallete
-pallete_2 <-  brewer.pal(4,"Set2")
-names(pallete_2) <-  
-  dataset_fin$Hab %>% 
-  unique()
-
-# Species pallete
-pallete_3 <-  brewer.pal(4,"Accent")
-names(pallete_3) <-  
-  dataset_fin$Spec %>% 
-  unique()
-
-# Guild pallete
-pallete_4 <-  brewer.pal(4,"Set1")
-names(pallete_4) <-  c("CHEW", "NR", "PRE", "SUC")
-
-
-# get the flat violin geom
-source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
-
+source("R/00_config.R")
 #----------------------------------------------------------#
 # 4. Herbivory damage exploratory figures -----
 #----------------------------------------------------------#
@@ -291,13 +218,18 @@ qplot(residuals(glm_herbivory_damage_select))
 
 # there are no interaction so have to plotted individually
 
-
 # calculate emmeans hab
 glm_herbivory_damage_emmeans_hab <-
   emmeans(
     glm_herbivory_damage_select,
     pairwise ~ Hab,
     type = "response") 
+
+# save the pairwise test 
+glm_herbivory_damage_emmeans_hab$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/herbivory_damage_pairwise_test_hab.csv")
 
 (model_plot_01 <-
   glm_herbivory_damage_emmeans_hab$emmeans %>% 
@@ -347,11 +279,6 @@ ggsave(
   height = PDF_height,
   units = "in")
 
-# save the pairwise test 
-glm_herbivory_damage_emmeans_hab$contrasts %>% 
-  as_tibble() %>% 
-  arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_hab.csv")
 
 
 # calculate emmeans Spec
@@ -360,6 +287,11 @@ glm_herbivory_damage_emmeans_Spec <-
     glm_herbivory_damage_select,
     pairwise ~ Spec,
     type = "response") 
+
+glm_herbivory_damage_emmeans_Spec$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/herbivory_damage_pairwise_test_spec.csv")
 
 (model_plot_02 <-
     glm_herbivory_damage_emmeans_Spec$emmeans %>% 
@@ -409,12 +341,6 @@ ggsave(
   height = PDF_height,
   units = "in")
 
-# save the pairwise test 
-glm_herbivory_damage_emmeans_Spec$contrasts %>% 
-  as_tibble() %>% 
-  arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_Spec.csv")
-
 
 # calculate emmeans Treatment
 glm_herbivory_damage_emmeans_Treatment <-
@@ -422,6 +348,12 @@ glm_herbivory_damage_emmeans_Treatment <-
     glm_herbivory_damage_select,
     pairwise ~ Treatment,
     type = "response") 
+
+# save the pairwise test 
+glm_herbivory_damage_emmeans_Treatment$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/herbivory_damage_pairwise_test_Treatment.csv")
 
 (model_plot_03 <-
     glm_herbivory_damage_emmeans_Treatment$emmeans %>% 
@@ -471,9 +403,5 @@ ggsave(
   height = PDF_height,
   units = "in")
 
-# save the pairwise test 
-glm_herbivory_damage_emmeans_Treatment$contrasts %>% 
-  as_tibble() %>% 
-  arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_Treatment.csv")
+
 

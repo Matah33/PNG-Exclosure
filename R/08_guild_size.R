@@ -10,86 +10,7 @@
 #
 #----------------------------------------------------------#
 
-#----------------------------------------------------------#
-# 1. Load libraries and functions -----
-#----------------------------------------------------------#
-
-# delete existing workspace to start clean
-rm(list = ls())
-
-# Package version control
-library(renv)
-# renv::init()
-# renv::snapshot(lockfile = "data/lock/revn.lock")
-renv::restore(lockfile = "data/lock/revn.lock")
-
-# libraries
-library(tidyverse)
-library(ggpubr)
-library(RColorBrewer)
-library(glmmTMB)
-library(MuMIn)
-library(emmeans)
-library(performance)
-
-
-#----------------------------------------------------------#
-# 2. Import data -----
-#----------------------------------------------------------#
-
-list_files <-  list.files("data/output/")
-
-if(any(list_files %in% "dataset_fin.csv")) {
-  dataset_fin <-  read.csv("data/output/dataset_fin.csv") %>% 
-    as_tibble()
-} else {
-  source("R/01_Data.R")
-}
-
-#----------------------------------------------------------#
-# 3. graphical properties definition  -----
-#----------------------------------------------------------#
-
-theme_set(theme_classic())
-text_size <-  10
-
-PDF_width <-  10
-PDF_height <-  6
-
-abundance_log_breaks <-  
-  c(0,1,10,100,
-    paste0("1e", seq(1:15)) %>% 
-      noquote()) %>%  
-  as.numeric()
-
-# display.brewer.all()
-
-# Treatment pallete
-pallete_1 <-  brewer.pal(3,"Pastel1")
-names(pallete_1) <-  
-  dataset_fin$Treatment %>% 
-  unique()
-
-# habitat pallete
-pallete_2 <-  brewer.pal(4,"Set2")
-names(pallete_2) <-  
-  dataset_fin$Hab %>% 
-  unique()
-
-# Species pallete
-pallete_3 <-  brewer.pal(4,"Accent")
-names(pallete_3) <-  
-  dataset_fin$Spec %>% 
-  unique()
-
-# Guild pallete
-pallete_4 <-  brewer.pal(4,"Set1")
-names(pallete_4) <-  c("CHEW", "NR", "PRE", "SUC")
-
-
-# get the flat violin geom
-source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
-
+source("R/00_config.R")
 
 #----------------------------------------------------------#
 # 4. calculation of guild ratio -----
@@ -259,9 +180,6 @@ ggsave(
 
 
 
-
-
-
 #----------------------------------------------------------#
 # 6. CHEW -----
 #----------------------------------------------------------#
@@ -291,7 +209,7 @@ glm_invertebrates_guild_chew_full <-
 summary(glm_invertebrates_guild_chew_full)
 check_model(glm_invertebrates_guild_chew_full) 
 model_performance(glm_invertebrates_guild_chew_full)
-check_distribution(glm_invertebrates_guild_chew_full)
+check_distribution(glm_invertebrates_guild_chew_full) # tweedie is suggested but problems with convergence
 qplot(residuals(glm_invertebrates_guild_chew_full))
 
 # calculate
@@ -393,8 +311,7 @@ glm_invertebrates_guild_chew_emmeans_treat <-
     
     labs(
       x = "Treatment",
-      y = "Mean size of arthropod",
-      title = "CHEW") +
+      y = "Mean size of arthropod") +
     scale_color_manual(values = pallete_1) +
     scale_fill_manual(values = pallete_1) +
     theme(
@@ -407,7 +324,87 @@ glm_invertebrates_guild_chew_emmeans_treat <-
 glm_invertebrates_guild_chew_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_chew_pairwise_test.csv")
+  write_csv("data/output/guild_size_chew_pairwise_test_treat.csv")
+
+
+
+(model_plot_chew_02 <-
+    dataset_guild_chew %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y = size,
+        col = Hab,
+        fill = Hab)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    labs(
+      x = "Habitat",
+      y = "Mean size of arthropod") +
+    scale_color_manual(values = pallete_2) +
+    scale_fill_manual(values = pallete_2) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+
+(model_plot_chew_03 <-
+    dataset_guild_chew %>% 
+    ggplot(
+      aes(
+        x = Spec,
+        y = size,
+        col = Spec,
+        fill = Spec)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    labs(
+      x = "Ficus species",
+      y = "Mean size of arthropod") +
+    scale_color_manual(values = pallete_3) +
+    scale_fill_manual(values = pallete_3) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+
+
+model_plot_chew_sum <- 
+  ggarrange(
+    
+    model_plot_chew_01 + 
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab"),
+    
+    model_plot_chew_02 +
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab") +
+      rremove("y.text"),
+    
+    model_plot_chew_03 + 
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab") +
+      rremove("y.text"),
+    
+    nrow = 1,
+    align = "hv" ) %>% 
+  annotate_figure(
+    top = text_grob(
+      "CHEW",
+      size = text_size
+    ))
+
+plot(model_plot_chew_sum)
 
 
 #----------------------------------------------------------#
@@ -476,7 +473,31 @@ qplot(residuals(glm_invertebrates_guild_pre_select))
 
 # 7.2. plot -----
 
-# calculate emmeans
+(model_plot_pre_01 <-
+   dataset_guild_pre %>% 
+   ggplot(
+     aes(
+       x = Treatment,
+       y = size,
+       col = Treatment,
+       fill = Treatment)) +
+   
+   geom_point(
+     alpha = 1,
+     position = position_jitterdodge(
+       dodge.width = 0.5,
+       jitter.width = 0.15)) +
+   
+   labs(
+     x = "Treatment",
+     y = "Mean size of arthropod") +
+   scale_color_manual(values = pallete_1) +
+   scale_fill_manual(values = pallete_1) +
+   theme(
+     text = element_text(size = text_size),
+     legend.position = "none"))
+
+
 glm_invertebrates_guild_pre_emmeans_hab <-
   emmeans(
     glm_invertebrates_guild_pre_select,
@@ -484,7 +505,7 @@ glm_invertebrates_guild_pre_emmeans_hab <-
     type = "response") 
 
 
-(model_plot_pre_01 <-
+(model_plot_pre_02 <-
     glm_invertebrates_guild_pre_emmeans_hab$emmeans %>% 
     as_tibble() %>% 
     ggplot(
@@ -517,8 +538,7 @@ glm_invertebrates_guild_pre_emmeans_hab <-
     
     labs(
       x = "Habitat",
-      y = "Mean size of arthropod",
-      title = "PRE") +
+      y = "Mean size of arthropod") +
     scale_color_manual(values = pallete_2) +
     scale_fill_manual(values = pallete_2) +
     theme(
@@ -531,7 +551,64 @@ glm_invertebrates_guild_pre_emmeans_hab <-
 glm_invertebrates_guild_pre_emmeans_hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_pre_pairwise_test.csv")
+  write_csv("data/output/guild_size_pre_pairwise_test_hab.csv")
+
+
+
+(model_plot_pre_03 <-
+    dataset_guild_pre %>% 
+    ggplot(
+      aes(
+        x = Spec,
+        y = size,
+        col = Spec,
+        fill = Spec)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    labs(
+      x = "Ficus species",
+      y = "Mean size of arthropod") +
+    scale_color_manual(values = pallete_3) +
+    scale_fill_manual(values = pallete_3) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+
+
+model_plot_pre_sum <- 
+  ggarrange(
+    
+    model_plot_pre_01 + 
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab"),
+    
+    model_plot_pre_02 +
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab") +
+      rremove("y.text"),
+    
+    model_plot_pre_03 + 
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab") +
+      rremove("y.text"),
+    
+    nrow = 1,
+    align = "hv" ) %>% 
+  annotate_figure(
+    top = text_grob(
+      "PRE",
+      size = text_size
+    ))
+
+plot(model_plot_pre_sum)
+
+
 
 
 #----------------------------------------------------------#
@@ -600,7 +677,7 @@ qplot(residuals(glm_invertebrates_guild_nr_select))
 
 # 8.2. plot -----
 
-# calculate emmeans
+
 glm_invertebrates_guild_nr_emmeans_treat <-
   emmeans(
     glm_invertebrates_guild_nr_select,
@@ -641,8 +718,7 @@ glm_invertebrates_guild_nr_emmeans_treat <-
     
     labs(
       x = "Treatment",
-      y = "Mean size of arthropod",
-      title = "NR") +
+      y = "Mean size of arthropod") +
     scale_color_manual(values = pallete_1) +
     scale_fill_manual(values = pallete_1) +
     theme(
@@ -654,8 +730,118 @@ glm_invertebrates_guild_nr_emmeans_treat <-
 glm_invertebrates_guild_nr_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_nr_pairwise_test.csv")
+  write_csv("data/output/guild_size_nr_pairwise_test_treat.csv")
 
+
+
+glm_invertebrates_guild_nr_emmeans_Hab <-
+  emmeans(
+    glm_invertebrates_guild_nr_select,
+    pairwise ~ Hab,
+    type = "response") 
+
+
+(model_plot_nr_02 <-
+    glm_invertebrates_guild_nr_emmeans_Hab$emmeans %>% 
+    as_tibble() %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y = response,
+        col = Hab,
+        fill = Hab)) +
+    
+    geom_point(
+      data = dataset_guild_nr,
+      aes(y = size),
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    geom_errorbar(
+      aes(
+        ymin =  lower.CL,
+        ymax = upper.CL),
+      width = 0.2,
+      position = position_dodge(width = 0.5, preserve = "single"),
+      size = 1)+
+    
+    geom_point(
+      shape = 0,
+      size = 3,
+      position = position_dodge(width = 0.5)) +
+    
+    labs(
+      x = "Habitat",
+      y = "Mean size of arthropod") +
+    scale_color_manual(values = pallete_2) +
+    scale_fill_manual(values = pallete_2) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+
+# save the pairwise test 
+glm_invertebrates_guild_nr_emmeans_Hab$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/guild_size_nr_pairwise_test_Hab.csv")
+
+
+
+(model_plot_nr_03 <-
+    dataset_guild_nr %>% 
+    ggplot(
+      aes(
+        x = Spec,
+        y = size,
+        col = Spec,
+        fill = Spec)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    
+    labs(
+      x = "Ficus Species",
+      y = "Mean size of arthropod") +
+    scale_color_manual(values = pallete_3) +
+    scale_fill_manual(values = pallete_3) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+
+model_plot_nr_sum <- 
+  ggarrange(
+    
+    model_plot_nr_01 + 
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab"),
+    
+    model_plot_nr_02 +
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab") +
+      rremove("y.text"),
+    
+    model_plot_nr_03 + 
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab") +
+      rremove("y.text"),
+    
+    nrow = 1,
+    align = "hv" ) %>% 
+  annotate_figure(
+    top = text_grob(
+      "NR",
+      size = text_size
+    ))
+
+plot(model_plot_nr_sum)
 
 #----------------------------------------------------------#
 # 9. SUC -----
@@ -683,6 +869,8 @@ glm_invertebrates_guild_suc_full <-
     family = Gamma(),
     na.action = "na.fail")
 
+# Full model has the problem with overparametrisation
+
 summary(glm_invertebrates_guild_suc_full)
 check_model(glm_invertebrates_guild_suc_full) 
 model_performance(glm_invertebrates_guild_suc_full)
@@ -696,8 +884,12 @@ glm_invertebrates_guild_suc_dd <-
     trace = T)
 
 # save result table
+# there is an issue with several models, hat to recalculate the delta AIC
 glm_invertebrates_guild_suc_dd %>% 
   as_tibble() %>% 
+  filter(is.na(AICc) == F) %>% 
+  mutate(delta = AICc - min(AICc) ) %>% 
+  arrange( delta) %>% 
   write_csv("data/output/guild_size_suc_model_result.csv")
 
 # observe the best model
@@ -744,7 +936,6 @@ compare_performance(
   rank = T
 )
 
-
 compare_performance(
   glm_invertebrates_guild_suc_m1, glm_invertebrates_guild_suc_m2,
   glm_invertebrates_guild_suc_m3, glm_invertebrates_guild_suc_m4,
@@ -763,7 +954,32 @@ qplot(residuals(glm_invertebrates_guild_suc_select))
 
 # 9.2. plot -----
 
-# calculate emmeans
+(model_plot_suc_01 <-
+   dataset_guild_suc %>% 
+   ggplot(
+     aes(
+       x = Treatment,
+       y = size,
+       col = Treatment,
+       fill = Treatment)) +
+   
+   geom_point(
+     alpha = 1,
+     position = position_jitterdodge(
+       dodge.width = 0.5,
+       jitter.width = 0.15)) +
+   
+   labs(
+     x = "Treatment",
+     y = "Mean size of arthropod") +
+   scale_color_manual(values = pallete_1) +
+   scale_fill_manual(values = pallete_1) +
+   theme(
+     text = element_text(size = text_size),
+     legend.position = "none"))
+
+
+
 glm_invertebrates_guild_suc_emmeans_hab <-
   emmeans(
     glm_invertebrates_guild_suc_select,
@@ -771,7 +987,7 @@ glm_invertebrates_guild_suc_emmeans_hab <-
     type = "response") 
 
 
-(model_plot_suc_01 <-
+(model_plot_suc_02 <-
     glm_invertebrates_guild_suc_emmeans_hab$emmeans %>% 
     as_tibble() %>% 
     ggplot(
@@ -804,8 +1020,7 @@ glm_invertebrates_guild_suc_emmeans_hab <-
     
     labs(
       x = "Habitat",
-      y = "Mean size of arthropod",
-      title = "SUC") +
+      y = "Mean size of arthropod") +
     scale_color_manual(values = pallete_2) +
     scale_fill_manual(values = pallete_2) +
     theme(
@@ -818,7 +1033,61 @@ glm_invertebrates_guild_suc_emmeans_hab <-
 glm_invertebrates_guild_suc_emmeans_hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_suc_pairwise_test.csv")
+  write_csv("data/output/guild_size_suc_pairwise_test_hab.csv")
+
+
+
+(model_plot_suc_03 <-
+    dataset_guild_suc %>% 
+    ggplot(
+      aes(
+        x = Spec,
+        y = size,
+        col = Spec,
+        fill = Spec)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    labs(
+      x = "Ficus species",
+      y = "Mean size of arthropod") +
+    scale_color_manual(values = pallete_3) +
+    scale_fill_manual(values = pallete_3) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+
+model_plot_suc_sum <- 
+  ggarrange(
+    
+    model_plot_suc_01 + 
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab"),
+    
+    model_plot_suc_02 +
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab") +
+      rremove("y.text"),
+    
+    model_plot_suc_03 + 
+      scale_y_continuous(limits = c(0,25)) +
+      rremove("ylab") +
+      rremove("y.text"),
+    
+    nrow = 1,
+    align = "hv" ) %>% 
+  annotate_figure(
+    top = text_grob(
+      "SUC",
+      size = text_size
+    ))
+
+plot(model_plot_suc_sum)
 
 #----------------------------------------------------------#
 # 10. Summary -----
@@ -827,35 +1096,32 @@ glm_invertebrates_guild_suc_emmeans_hab$contrasts %>%
 model_plot_guild_01 <- 
   ggarrange(
     
-    model_plot_chew_01 + 
+    model_plot_chew_sum + 
       scale_y_continuous(limits = c(0,25)) +
       rremove("xylab"),
     
-    model_plot_pre_01 +
+    model_plot_pre_sum +
       scale_y_continuous(limits = c(0,25)) +
       rremove("xylab") +
       rremove("y.text"),
     
-    model_plot_nr_01 + 
+    model_plot_nr_sum + 
       scale_y_continuous(limits = c(0,25)) +
       rremove("xylab") +
       rremove("y.text"),
     
-    model_plot_suc_01 + 
+    model_plot_suc_sum + 
       scale_y_continuous(limits = c(0,25)) +
       rremove("xylab") + 
       rremove("y.text"),
     
-    nrow = 1,
+    ncol = 1,
     align = "hv" ) %>% 
   annotate_figure(
     left = text_grob(
       "Mean size of arthropod",
       size = text_size,
-      rot = 90),
-    bottom = text_grob(
-      "Treatment / Habitat",
-      size = text_size)
+      rot = 90)
   )
 
 plot(model_plot_guild_01)

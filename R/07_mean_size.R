@@ -10,85 +10,7 @@
 #
 #----------------------------------------------------------#
 
-#----------------------------------------------------------#
-# 1. Load libraries and functions -----
-#----------------------------------------------------------#
-
-# delete existing workspace to start clean
-rm(list = ls())
-
-# Package version control
-library(renv)
-# renv::init()
-# renv::snapshot(lockfile = "data/lock/revn.lock")
-renv::restore(lockfile = "data/lock/revn.lock")
-
-# libraries
-library(tidyverse)
-library(ggpubr)
-library(RColorBrewer)
-library(glmmTMB)
-library(MuMIn)
-library(emmeans)
-library(performance)
-
-#----------------------------------------------------------#
-# 2. Import data -----
-#----------------------------------------------------------#
-
-list_files <-  list.files("data/output/")
-
-if(any(list_files %in% "dataset_fin.csv")) {
-  dataset_fin <-  read.csv("data/output/dataset_fin.csv") %>% 
-    as_tibble()
-} else {
-  source("R/01_Data.R")
-}
-
-#----------------------------------------------------------#
-# 3. graphical properties definition  -----
-#----------------------------------------------------------#
-
-theme_set(theme_classic())
-text_size <-  10
-
-PDF_width <-  10
-PDF_height <-  6
-
-abundance_log_breaks <-  
-  c(0,1,10,100,
-    paste0("1e", seq(1:15)) %>% 
-      noquote()) %>%  
-  as.numeric()
-
-# display.brewer.all()
-
-# Treatment pallete
-pallete_1 <-  brewer.pal(3,"Pastel1")
-names(pallete_1) <-  
-  dataset_fin$Treatment %>% 
-  unique()
-
-# habitat pallete
-pallete_2 <-  brewer.pal(4,"Set2")
-names(pallete_2) <-  
-  dataset_fin$Hab %>% 
-  unique()
-
-# Species pallete
-pallete_3 <-  brewer.pal(4,"Accent")
-names(pallete_3) <-  
-  dataset_fin$Spec %>% 
-  unique()
-
-# Guild pallete
-pallete_4 <-  brewer.pal(4,"Set1")
-names(pallete_4) <-  c("CHEW", "NR", "PRE", "SUC")
-
-
-# get the flat violin geom
-source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
-
+source("R/00_config.R")
 
 #----------------------------------------------------------#
 # 4. Exporatory figures -----
@@ -247,18 +169,17 @@ summary(dataset_mean_size)
 
 # cretae full model with all interaction
 glm_mean_size_full <-
-  glm(Mean_size ~ Hab * Treatment * Spec,
+  glmmTMB(Mean_size ~ Hab * Treatment * Spec,
       data = dataset_mean_size,
       family = Gamma(),
       na.action = "na.fail")
 
 summary(glm_mean_size_full)
-check_model(glm_mean_size_full) # do not know why it does not work
-check_distribution(glm_mean_size_full)
+check_model(glm_mean_size_full) 
+check_distribution(glm_mean_size_full) # tweedie is suggested but problems with convergence
 model_performance(glm_mean_size_full)
 qplot(residuals(glm_mean_size_full))
-check_normality(glm_mean_size_full)
-check_heteroscedasticity(glm_mean_size_full)
+check_heteroscedasticity(glm_mean_size_full) # does not work
 
 # compute all posible combinations
 glm_mean_size_dd <- 
@@ -279,25 +200,31 @@ glm_mean_size_dd %>%
 
 # fit the all the models with similar parsimony
 glm_leaf_m1 <- 
-  glm(Mean_size ~ Hab + Treatment,
+  glmmTMB(Mean_size ~ Treatment,
       data = dataset_mean_size,
       family = Gamma(),
       na.action = "na.fail")
 
 glm_leaf_m2 <- 
-  glm(Mean_size ~ Hab + Spec + Treatment,
+  glmmTMB(Mean_size ~ Hab +  Treatment,
       data = dataset_mean_size,
       family = Gamma(),
       na.action = "na.fail")
 
 glm_leaf_m3 <- 
-  glm(Mean_size ~  Treatment,
+  glmmTMB(Mean_size ~  Hab + Spec + Treatment,
       data = dataset_mean_size,
       family = Gamma(),
       na.action = "na.fail")
 
 glm_leaf_m4 <- 
-  glm(Mean_size ~ Spec + Treatment,
+  glmmTMB(Mean_size ~ Spec + Treatment,
+      data = dataset_mean_size,
+      family = Gamma(),
+      na.action = "na.fail")
+
+glm_leaf_m5 <- 
+  glmmTMB(Mean_size ~ Hab + Treatment,
       data = dataset_mean_size,
       family = Gamma(),
       na.action = "na.fail")
@@ -305,38 +232,41 @@ glm_leaf_m4 <-
 
 # compare models
 compare_performance(
-  glm_leaf_m1, glm_leaf_m2, glm_leaf_m3, glm_leaf_m4,
+  glm_leaf_m1, glm_leaf_m2, glm_leaf_m3, glm_leaf_m4, glm_leaf_m5,
   rank = TRUE)
 
 
 # compare models
 compare_performance(
-  glm_leaf_m1, glm_leaf_m2, glm_leaf_m3, glm_leaf_m4,
+  glm_leaf_m1, glm_leaf_m2, glm_leaf_m3, glm_leaf_m4, glm_leaf_m5,
   rank = TRUE) %>% 
   as_tibble() %>% 
   write_csv("data/output/mean_size_model_performance_comparison.csv")
 
 
 # m1 is better
-glm_mean_size_select <- glm_leaf_m2
+glm_mean_size_select <- glm_leaf_m3
 
 summary(glm_mean_size_select)
 check_model(glm_mean_size_select)
 model_performance(glm_mean_size_select)
 check_heteroscedasticity(glm_mean_size_select)
-check_normality(glm_mean_size_select)
 qplot(residuals(glm_mean_size_select))
 
 
+#----------------------------------------------------------#
+# 6. Model plot -----
+#----------------------------------------------------------#
+
 # calculate emmeans
-glm_mean_size_emmeans <-
+glm_mean_size_emmeans_treat <-
   emmeans(
     glm_mean_size_select,
     pairwise ~ Treatment,
     type = "response") 
 
 (model_plot_01 <- 
-    glm_mean_size_emmeans$emmeans %>% 
+    glm_mean_size_emmeans_treat$emmeans %>% 
     as_tibble() %>% 
     ggplot(
       aes(
@@ -354,8 +284,8 @@ glm_mean_size_emmeans <-
     
     geom_errorbar(
       aes(
-        ymin =  asymp.LCL,
-        ymax = asymp.UCL),
+        ymin =  lower.CL,
+        ymax = upper.CL),
       width=0.2,
       position = position_dodge(width = 0.5, preserve = "single"),
       size = 1)+
@@ -366,7 +296,7 @@ glm_mean_size_emmeans <-
       size = 3) +
     
     labs(
-      x = "Habitat",
+      x = "Treatment",
       y = "Mean size of arthropod (mm)" ) +
     scale_color_manual(values = pallete_1) +
     theme(
@@ -382,7 +312,126 @@ ggsave(
   units = "in")
 
 # save the pairwise test 
-glm_mean_size_emmeans$contrasts %>% 
+glm_mean_size_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/mean_size_pairwise_test.csv")
+  write_csv("data/output/mean_size_pairwise_test_treat.csv")
+
+
+glm_mean_size_emmeans_hab <-
+  emmeans(
+    glm_mean_size_select,
+    pairwise ~ Hab,
+    type = "response") 
+
+(model_plot_02 <- 
+    glm_mean_size_emmeans_hab$emmeans %>% 
+    as_tibble() %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y = response,
+        col = Hab)) + 
+    
+    geom_point(
+      data = dataset_mean_size,
+      aes(y = Mean_size),
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    geom_errorbar(
+      aes(
+        ymin =  lower.CL,
+        ymax = upper.CL),
+      width=0.2,
+      position = position_dodge(width = 0.5, preserve = "single"),
+      size = 1)+
+    
+    geom_point(
+      shape = 0,
+      position = position_dodge(width = 0.5),
+      size = 3) +
+    
+    labs(
+      x = "Habitat",
+      y = "Mean size of arthropod (mm)" ) +
+    scale_color_manual(values = pallete_2) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "right"))
+
+# save pdf
+ggsave(
+  "fig/arthropod_size/model_plot_02.pdf",
+  model_plot_02,
+  width = PDF_width,
+  height = PDF_height,
+  units = "in")
+
+# save the pairwise test 
+glm_mean_size_emmeans_hab$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/mean_size_pairwise_test_hab.csv")
+
+
+glm_mean_size_emmeans_Spec <-
+  emmeans(
+    glm_mean_size_select,
+    pairwise ~ Spec,
+    type = "response") 
+
+(model_plot_03 <- 
+    glm_mean_size_emmeans_Spec$emmeans %>% 
+    as_tibble() %>% 
+    ggplot(
+      aes(
+        x = Spec,
+        y = response,
+        col = Spec)) + 
+    
+    geom_point(
+      data = dataset_mean_size,
+      aes(y = Mean_size),
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    geom_errorbar(
+      aes(
+        ymin =  lower.CL,
+        ymax = upper.CL),
+      width=0.2,
+      position = position_dodge(width = 0.5, preserve = "single"),
+      size = 1)+
+    
+    geom_point(
+      shape = 0,
+      position = position_dodge(width = 0.5),
+      size = 3) +
+    
+    labs(
+      x = "Ficus Species",
+      y = "Mean size of arthropod (mm)" ) +
+    scale_color_manual(values = pallete_3) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "right"))
+
+# save pdf
+ggsave(
+  "fig/arthropod_size/model_plot_03.pdf",
+  model_plot_03,
+  width = PDF_width,
+  height = PDF_height,
+  units = "in")
+
+# save the pairwise test 
+glm_mean_size_emmeans_Spec$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/mean_size_pairwise_test_Spec.csv")
+

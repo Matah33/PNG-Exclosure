@@ -9,86 +9,7 @@
 #                         2020
 #
 #----------------------------------------------------------#
-
-#----------------------------------------------------------#
-# 1. Load libraries and functions -----
-#----------------------------------------------------------#
-
-# delete existing workspace to start clean
-rm(list = ls())
-
-# Package version control
-library(renv)
-# renv::init()
-# renv::snapshot(lockfile = "data/lock/revn.lock")
-renv::restore(lockfile = "data/lock/revn.lock")
-
-# libraries
-library(tidyverse)
-library(ggpubr)
-library(RColorBrewer)
-library(glmmTMB)
-library(MuMIn)
-library(emmeans)
-library(performance)
-
-#----------------------------------------------------------#
-# 2. Import data -----
-#----------------------------------------------------------#
-
-list_files <-  list.files("data/output/")
-
-if(any(list_files %in% "dataset_fin.csv")) {
-  dataset_fin <-  read.csv("data/output/dataset_fin.csv") %>% 
-    as_tibble()
-} else {
-  source("R/01_Data.R")
-}
-
-#----------------------------------------------------------#
-# 3. graphical properties definition  -----
-#----------------------------------------------------------#
-
-theme_set(theme_classic())
-text_size <-  10
-
-PDF_width <-  10
-PDF_height <-  6
-
-abundance_log_breaks <-  
-  c(0,1,10,100,
-    paste0("1e", seq(1:15)) %>% 
-      noquote()) %>%  
-  as.numeric()
-
-# display.brewer.all()
-
-# Treatment pallete
-pallete_1 <-  brewer.pal(3,"Pastel1")
-names(pallete_1) <-  
-  dataset_fin$Treatment %>% 
-  unique()
-
-# habitat pallete
-pallete_2 <-  brewer.pal(4,"Set2")
-names(pallete_2) <-  
-  dataset_fin$Hab %>% 
-  unique()
-
-# Species pallete
-pallete_3 <-  brewer.pal(4,"Accent")
-names(pallete_3) <-  
-  dataset_fin$Spec %>% 
-  unique()
-
-# Guild pallete
-pallete_4 <-  brewer.pal(4,"Set1")
-names(pallete_4) <-  c("CHEW", "NR", "PRE", "SUC")
-
-
-# get the flat violin geom
-source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
-
+source("R/00_config.R")
 
 #----------------------------------------------------------#
 # 4. calculation of guild ratio -----
@@ -216,63 +137,6 @@ summary(dataset_guild_ratio)
       text = element_text(size = text_size),
       legend.position = "right"))
 
-#----------------------------------------------------------#
-# 6. multivariable aproach Model -----
-#----------------------------------------------------------#
-
-# WIP !!!! does not work as Tree ID suck up all variability
-
-library(vegan)
-
-# arcsine square root of proportion
-arcsin.transform <- function(x){asin(sqrt(x))}
-
-data_rda <-
-  dataset_guild_ratio %>%
-  pivot_wider(
-    names_from = guild, 
-    values_from = guild_ratio) %>% 
-  mutate_if(is.double, arcsin.transform)  
-
-data_rda_guild <-
-  data_rda %>% 
-  dplyr::select(-c(Plot, Treatment, Hab, Spec, TreeID)) 
-
-data_rda_env <-
-  data_rda %>% 
-  dplyr::select(Treatment, Hab, Spec, TreeID) 
-
-# test for lengt of 1 axis to determine the linear/unimodal relationship
-data_rda_guild %>% 
-  decorana()
-# first axis lengt is under 2.5 -> linear predictor -> RDA
-
-# fit RDA
-rda_00 <- 
-  rda(
-    data_rda_guild  ~ 1 +  Condition(TreeID),
-    data_rda_env,
-    scale = F) 
-
-rda_01 <- # Model with all explanatory variables
-  rda(data_rda_guild  ~ Treatment + Hab + Spec + Condition(TreeID),
-      data_rda_env,
-      scale = F)   
-
-rda_fin <- 
-  ordistep(
-    rda_00,
-    scope =  ~ Treatment + Hab + Spec + Condition(TreeID),
-    direction ="both")
-
-rda_fin
-
-rda_fin$anova
-
-# 6.1 visualise -----
-
-plot(rda_fin)
-
 
 #----------------------------------------------------------#
 # 7. individual guild test -----
@@ -356,7 +220,7 @@ compare_performance(
 
 
 
-aglm_invertebrates_guild_chew_select <- glm_invertebrates_guild_chew_m1
+glm_invertebrates_guild_chew_select <- glm_invertebrates_guild_chew_m1
   
 summary(glm_invertebrates_guild_chew_select)
 check_model(glm_invertebrates_guild_chew_select)
@@ -384,14 +248,85 @@ qplot(residuals(glm_invertebrates_guild_chew_select))
     
     labs(
       x = "Treatment",
-      y = "Guild abundance ratio",
-      title = "CHEW") +
+      y = "Guild abundance ratio") +
     scale_color_manual(values = pallete_1) +
     scale_fill_manual(values = pallete_1) +
     theme(
       text = element_text(size = text_size),
       legend.position = "none"))
 
+(model_plot_chew_02 <-
+    dataset_guild_chew %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y =  guild_ratio,
+        col = Hab,
+        fill = Hab)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    labs(
+      x = "Habitat",
+      y = "Guild abundance ratio") +
+    scale_color_manual(values = pallete_2) +
+    scale_fill_manual(values = pallete_2) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+(model_plot_chew_03 <-
+    dataset_guild_chew %>% 
+    ggplot(
+      aes(
+        x = Spec,
+        y =  guild_ratio,
+        col = Spec,
+        fill = Spec)) +
+    
+    geom_point(
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    labs(
+      x = "Ficus species",
+      y = "Guild abundance ratio") +
+    scale_color_manual(values = pallete_3) +
+    scale_fill_manual(values = pallete_3) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+
+model_plot_chew_sum <- 
+  ggarrange(
+    
+    model_plot_chew_01 + 
+      rremove("ylab"),
+    
+    model_plot_chew_02 + 
+      rremove("ylab"),
+    
+    model_plot_chew_03 + 
+      rremove("ylab"),
+    
+    nrow = 1,
+    common.legend = T,
+    legend = "none") %>% 
+  annotate_figure(
+    top = text_grob(
+      "CHEW",
+      size = text_size
+    )
+  )
+
+plot(model_plot_chew_sum)
 
 #----------------------------------------------------------#
 # 7.3 NR -----
@@ -465,7 +400,6 @@ glm_invertebrates_guild_nr_emmeans_treat <-
     pairwise ~ Treatment,
     type = "response") 
 
-
 (model_plot_nr_01 <-
     glm_invertebrates_guild_nr_emmeans_treat$emmeans %>% 
     as_tibble() %>% 
@@ -499,8 +433,7 @@ glm_invertebrates_guild_nr_emmeans_treat <-
     
     labs(
       x = "Treatment",
-      y = "Guild abundance ratio",
-      title = "NR") +
+      y = "Guild abundance ratio") +
     scale_color_manual(values = pallete_1) +
     scale_fill_manual(values = pallete_1) +
     scale_y_continuous(limits = c(0,1)) +
@@ -508,12 +441,88 @@ glm_invertebrates_guild_nr_emmeans_treat <-
       text = element_text(size = text_size),
       legend.position = "none"))
 
-
 # save the pairwise test 
 glm_invertebrates_guild_nr_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_nr_pairwise_test.csv")
+  write_csv("data/output/invertebrates_ratio_nr_pairwise_test_treat.csv")
+
+
+glm_invertebrates_guild_nr_emmeans_HabSpec <-
+  emmeans(
+    glm_invertebrates_guild_nr_select,
+    pairwise ~ Hab + Spec + Hab:Spec,
+    type = "response") 
+
+
+(model_plot_nr_02 <-
+    glm_invertebrates_guild_nr_emmeans_HabSpec$emmeans %>% 
+    as_tibble() %>% 
+    ggplot(
+      aes(
+        x = Hab,
+        y = response,
+        col = Spec,
+        fill = Spec)) +
+    
+    geom_point(
+      data = dataset_guild_nr,
+      aes(y = guild_ratio),
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    geom_errorbar(
+      aes(
+        ymin =  lower.CL,
+        ymax = upper.CL),
+      width = 0.2,
+      position = position_dodge(width = 0.5, preserve = "single"),
+      size = 1)+
+    
+    geom_point(
+      shape = 0,
+      size = 3,
+      position = position_dodge(width = 0.5)) +
+    
+    labs(
+      x = "habitat",
+      y = "Guild abundance ratio") +
+    scale_color_manual(values = pallete_3) +
+    scale_fill_manual(values = pallete_3) +
+    scale_y_continuous(limits = c(0,1)) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "right"))
+
+
+glm_invertebrates_guild_nr_emmeans_HabSpec$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/invertebrates_ratio_nr_pairwise_test_HabSpec.csv")
+
+
+model_plot_nr_sum <- 
+  ggarrange(
+    
+    model_plot_nr_01 + 
+      rremove("ylab"),
+    
+    model_plot_nr_02 + 
+      rremove("ylab"),
+    
+    nrow = 1,
+    common.legend = T,
+    legend = "none") %>% 
+  annotate_figure(
+    top = text_grob(
+      "NR",
+      size = text_size
+    )
+  )
+
+plot(model_plot_nr_sum)
 
 
 
@@ -573,14 +582,14 @@ glm_invertebrates_guild_pre_dd %>%
 
 glm_invertebrates_guild_pre_m1<- 
   glmmTMB(
-    guild_ratio ~ Hab + Treatment + Hab:Treatment,
+    guild_ratio ~ Hab + Spec + Treatment + Hab:Treatment + Spec:Treatment,
     data = dataset_guild_pre,
     family = beta_family(),
     na.action = "na.fail")
 
 glm_invertebrates_guild_pre_m2 <- 
   glmmTMB(
-    guild_ratio ~ Hab + Spec + Treatment + Hab:Treatment + Spec:Treatment,
+    guild_ratio ~ Hab + Spec + Treatment + Spec:Treatment,
     data = dataset_guild_pre,
     family = beta_family(),
     na.action = "na.fail")
@@ -608,7 +617,7 @@ qplot(residuals(glm_invertebrates_guild_pre_select))
 # 7.4.2. plot -----
 
 # calculate emmeans
-glm_invertebrates_guild_pre_emmeans_treat <-
+glm_invertebrates_guild_pre_emmeans_HabTreat <-
   emmeans(
     glm_invertebrates_guild_pre_select,
     pairwise ~ Hab + Treatment + + Hab:Treatment,
@@ -616,7 +625,7 @@ glm_invertebrates_guild_pre_emmeans_treat <-
 
 
 (model_plot_pre_01 <-
-    glm_invertebrates_guild_pre_emmeans_treat$emmeans %>% 
+    glm_invertebrates_guild_pre_emmeans_HabTreat$emmeans %>% 
     as_tibble() %>% 
     ggplot(
       aes(
@@ -648,8 +657,7 @@ glm_invertebrates_guild_pre_emmeans_treat <-
     
     labs(
       x = "Habitat",
-      y = "Guild abundance ratio",
-      title = "PRE") +
+      y = "Guild abundance ratio") +
     scale_color_manual(values = pallete_1) +
     scale_fill_manual(values = pallete_1) +
     scale_y_continuous(limits = c(0,1)) +
@@ -662,7 +670,87 @@ glm_invertebrates_guild_pre_emmeans_treat <-
 glm_invertebrates_guild_pre_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_nr_pairwise_test.csv")
+  write_csv("data/output/invertebrates_ratio_pre_pairwise_test_HabTreat.csv")
+
+
+
+# calculate emmeans
+glm_invertebrates_guild_pre_emmeans_SpecTreat <-
+  emmeans(
+    glm_invertebrates_guild_pre_select,
+    pairwise ~ Spec + Treatment + + Spec:Treatment,
+    type = "response") 
+
+
+(model_plot_pre_02 <-
+    glm_invertebrates_guild_pre_emmeans_SpecTreat$emmeans %>% 
+    as_tibble() %>% 
+    ggplot(
+      aes(
+        x = Spec,
+        y = response,
+        col = Treatment,
+        fill = Treatment)) +
+    
+    geom_point(
+      data = dataset_guild_pre,
+      aes(y = guild_ratio),
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    geom_errorbar(
+      aes(
+        ymin =  lower.CL,
+        ymax = upper.CL),
+      width = 0.2,
+      position = position_dodge(width = 0.5, preserve = "single"),
+      size = 1)+
+    
+    geom_point(
+      shape = 0,
+      size = 3,
+      position = position_dodge(width = 0.5)) +
+    
+    labs(
+      x = "Ficus Species",
+      y = "Guild abundance ratio") +
+    scale_color_manual(values = pallete_1) +
+    scale_fill_manual(values = pallete_1) +
+    scale_y_continuous(limits = c(0,1)) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "right"))
+
+
+# save the pairwise test 
+glm_invertebrates_guild_pre_emmeans_treat$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/invertebrates_ratio_pre_pairwise_test_SpecTreat.csv")
+
+
+model_plot_pre_sum <- 
+  ggarrange(
+    
+    model_plot_pre_01 + 
+      rremove("ylab"),
+    
+    model_plot_pre_02 + 
+      rremove("ylab"),
+    
+    nrow = 1,
+    common.legend = T,
+    legend = "none") %>% 
+  annotate_figure(
+    top = text_grob(
+      "PRE",
+      size = text_size
+    )
+  )
+
+plot(model_plot_pre_sum)
 
 
 
@@ -736,7 +824,7 @@ qplot(residuals(glm_invertebrates_guild_suc_select))
 # 7.5.2. plot -----
 
 # calculate emmeans
-glm_invertebrates_guild_suc_emmeans_treat <-
+glm_invertebrates_guild_suc_emmeans_SpecTreat <-
   emmeans(
     glm_invertebrates_guild_suc_select,
     pairwise ~ Spec + Treatment + + Spec:Treatment,
@@ -744,7 +832,7 @@ glm_invertebrates_guild_suc_emmeans_treat <-
 
 
 (model_plot_suc_01 <-
-    glm_invertebrates_guild_suc_emmeans_treat$emmeans %>% 
+    glm_invertebrates_guild_suc_emmeans_SpecTreat$emmeans %>% 
     as_tibble() %>% 
     ggplot(
       aes(
@@ -776,8 +864,7 @@ glm_invertebrates_guild_suc_emmeans_treat <-
     
     labs(
       x = "Ficus species",
-      y = "Guild abundance ratio",
-      title = "SUC") +
+      y = "Guild abundance ratio") +
     scale_color_manual(values = pallete_1) +
     scale_fill_manual(values = pallete_1) +
     scale_y_continuous(limits = c(0,1)) +
@@ -787,10 +874,89 @@ glm_invertebrates_guild_suc_emmeans_treat <-
 
 
 # save the pairwise test 
-glm_invertebrates_guild_suc_emmeans_treat$contrasts %>% 
+glm_invertebrates_guild_suc_emmeans_SpecTreat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_nr_pairwise_test.csv")
+  write_csv("data/output/invertebrates_ratio_suc_pairwise_test_SpecTreat.csv")
+
+glm_invertebrates_guild_suc_emmeans_SpecHab <-
+  emmeans(
+    glm_invertebrates_guild_suc_select,
+    pairwise ~ Spec + Hab + + Spec:Hab,
+    type = "response") 
+
+
+(model_plot_suc_02 <-
+    glm_invertebrates_guild_suc_emmeans_SpecHab$emmeans %>% 
+    as_tibble() %>% 
+    ggplot(
+      aes(
+        x = Spec,
+        y = response,
+        col = Hab,
+        fill = Hab)) +
+    
+    geom_point(
+      data = dataset_guild_suc,
+      aes(y = guild_ratio),
+      alpha = 1,
+      position = position_jitterdodge(
+        dodge.width = 0.5,
+        jitter.width = 0.15)) +
+    
+    geom_errorbar(
+      aes(
+        ymin =  lower.CL,
+        ymax = upper.CL),
+      width = 0.2,
+      position = position_dodge(width = 0.5, preserve = "single"),
+      size = 1)+
+    
+    geom_point(
+      shape = 0,
+      size = 3,
+      position = position_dodge(width = 0.5)) +
+    
+    labs(
+      x = "Ficus species",
+      y = "Guild abundance ratio") +
+    scale_color_manual(values = pallete_2) +
+    scale_fill_manual(values = pallete_2) +
+    scale_y_continuous(limits = c(0,1)) +
+    theme(
+      text = element_text(size = text_size),
+      legend.position = "none"))
+
+
+# save the pairwise test 
+glm_invertebrates_guild_suc_emmeans_SpecHab$contrasts %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/invertebrates_ratio_suc_pairwise_test_SpecHab.csv")
+
+
+
+model_plot_suc_sum <- 
+  ggarrange(
+    
+    model_plot_suc_01 + 
+      rremove("ylab"),
+    
+    model_plot_suc_02 + 
+      rremove("ylab"),
+    
+    nrow = 1,
+    common.legend = T,
+    legend = "none") %>% 
+  annotate_figure(
+    top = text_grob(
+      "SUC",
+      size = text_size
+    )
+  )
+
+plot(model_plot_suc_sum)
+
 
 #----------------------------------------------------------#
 # 7.6 Summary -----
@@ -800,22 +966,22 @@ glm_invertebrates_guild_suc_emmeans_treat$contrasts %>%
 model_plot_guild_01 <- 
   ggarrange(
     
-    model_plot_chew_01 + 
+    model_plot_chew_sum + 
       rremove("ylab"),
     
-    model_plot_pre_01 +
+    model_plot_nr_sum +
       rremove("ylab") +
       rremove("y.text"),
     
-    model_plot_nr_01 + 
+    model_plot_pre_sum + 
       rremove("ylab") +
       rremove("y.text"),
     
-    model_plot_suc_01 + 
+    model_plot_suc_sum + 
       rremove("ylab") + 
       rremove("y.text"),
     
-    nrow = 1,
+    ncol = 1,
     common.legend = T,
     legend = "right") %>% 
   annotate_figure(
@@ -827,6 +993,8 @@ model_plot_guild_01 <-
 
 
 plot(model_plot_guild_01)
+
+# teoreticky jde rozsekat do více grafů
 
 # save pdf
 ggsave(
