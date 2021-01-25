@@ -16,7 +16,7 @@ source("R/00_config.R")
 # 4. Exporatory figures -----
 #----------------------------------------------------------#
 
-# per treatmetns
+# per treatments
 (ext_plot_01 <- 
    dataset_fin %>% 
    ggplot(
@@ -245,7 +245,7 @@ compare_performance(
 
 
 # m1 is better
-glm_mean_size_select <- glm_leaf_m3
+glm_mean_size_select <- glm_leaf_m1
 
 summary(glm_mean_size_select)
 check_model(glm_mean_size_select)
