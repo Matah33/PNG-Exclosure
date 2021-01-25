@@ -75,7 +75,7 @@ summary(dataset_guild_ratio)
      text = element_text(size = text_size),
      legend.position = "right"))
 
- # per haitat
+ # per habitat
 (ext_plot_02 <- 
     dataset_guild_ratio %>% 
     group_by(Hab, guild) %>% 
@@ -127,7 +127,7 @@ summary(dataset_guild_ratio)
     ) +
     
     labs(
-      x = "Ficus species", 
+      x = "Species", 
       y = "Ratio of guild presence") +
     scale_fill_manual(values = pallete_4) +
     scale_y_continuous(
@@ -373,7 +373,7 @@ glm_invertebrates_guild_nr_dd <-
 # save result table
 glm_invertebrates_guild_nr_dd %>% 
   as_tibble() %>% 
-  write_csv("data/output/invertebrates_ratio_nr_model_result.csv")
+  write_csv("data/output/inv_ratio_nr_model_result.csv")
 
 # observe the best model
 glm_invertebrates_guild_nr_dd %>% 
@@ -577,7 +577,7 @@ glm_invertebrates_guild_pre_dd <-
 # save result table
 glm_invertebrates_guild_pre_dd %>% 
   as_tibble() %>% 
-  write_csv("data/output/invertebrates_ratio_pre_model_result.csv")
+  write_csv("data/output/inv_ratio_pre_model_result.csv")
 
 
 # observe the best model

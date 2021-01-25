@@ -163,7 +163,7 @@ ggsave(
     facet_grid( ~ guild)+
     
     labs(
-      x = "Ficus species",
+      x = "Species",
       y = expression(paste("Invertebrates abundance per m" ^ 2)) )+
     scale_fill_manual(values = pallete_4) +
     scale_color_manual(values = pallete_4) +
@@ -228,10 +228,11 @@ glm_invertebrates_guild_chew_dd %>%
   filter(delta < 2 ) %>% 
   View()
 
+#changed from Hab+Treatment into Treatment
 
 glm_invertebrates_guild_chew_select <- 
   glmmTMB(
-    abundance_per_leaf_area ~ Hab + Treatment,
+    abundance_per_leaf_area ~ Treatment,
     data = dataset_guild_chew,
     family = tweedie(),
     na.action = "na.fail")
@@ -306,14 +307,17 @@ glm_invertebrates_guild_chew_emmeans_treat$emmeans %>%
   as_tibble() %>% 
   write_csv("data/output/inv_chew_pairwise_treat_emmeans.csv")
 
-glm_invertebrates_guild_chew_emmeans_Hab <-
+#Habitat analysis removed
+
+
+#glm_invertebrates_guild_chew_emmeans_Hab <-
   emmeans(
     glm_invertebrates_guild_chew_select,
     pairwise ~ Hab,
     type = "response") 
 
 
-(model_plot_chew_02 <-
+#(model_plot_chew_02 <-
     glm_invertebrates_guild_chew_emmeans_Hab$emmeans %>% 
     as_tibble() %>% 
     ggplot(
@@ -355,13 +359,13 @@ glm_invertebrates_guild_chew_emmeans_Hab <-
       legend.position = "none"))
 
 # save the pairwise test 
-glm_invertebrates_guild_chew_emmeans_Hab$contrasts %>% 
+#glm_invertebrates_guild_chew_emmeans_Hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
   write_csv("data/output/inv_chew_pairwise_Hab_contrast.csv")
 
 # save the pairwise test 
-glm_invertebrates_guild_chew_emmeans_Hab$emmeans %>% 
+#glm_invertebrates_guild_chew_emmeans_Hab$emmeans %>% 
   as_tibble() %>% 
   write_csv("data/output/inv_chew_pairwise_Hab_emmeans.csv")
 
@@ -439,7 +443,7 @@ compare_performance(
   glm_invertebrates_guild_pre_m1, glm_invertebrates_guild_pre_m2,
   rank = T) %>% 
   as_tibble() %>% 
-  write_csv("data/output/invertebrates_pre_model_performance_comparison.csv")
+  write_csv("data/output/inv_pre_model_performance_comparison.csv")
 
 glm_invertebrates_guild_pre_select <- glm_invertebrates_guild_pre_m2
 
@@ -511,7 +515,6 @@ glm_invertebrates_guild_pre_emmeans_treat$contrasts %>%
 
 glm_invertebrates_guild_pre_emmeans_treat$emmeans %>% 
   as_tibble() %>% 
-  arrange(p.value) %>% 
   write_csv("data/output/inv_pre_pairwise_treat_emmeans.csv")
 
 
