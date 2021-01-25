@@ -19,6 +19,7 @@ dataset_desing <-
   readxl::read_xlsx("data/input/data_input_clean.xlsx","Design_data")  %>% 
   mutate(TreeID = as.character(TreeID))
 
+
 # calculate total tree leaf area
 dataset_desing <-  
   dataset_desing %>% 
@@ -49,6 +50,10 @@ dataset_herbivory_sum <-
       herbivory_percentage_mean = mean(Percentage)
     )
 
+write_csv(
+  dataset_desing,
+  "data/output/dataset_desing.csv")
+
 # 1.3 invertebrates data -----
 dataset_invertebrates <-  
   readxl::read_xlsx("data/input/data_input_clean.xlsx","Invertebrates")  %>% 
@@ -76,11 +81,7 @@ dataset_invertebrates_sum_abund <-
   ungroup() %>% 
   pivot_wider(names_from = Guild, values_from = Abundance) %>% 
   replace(is.na(.), 0)
-  
-# Marketa: Didnt work for me, so I manually created the pivot table and copied through the clipboard:
 
-dataset_invertebrates_sum_abund <- read.delim("clipboard")
-dataset_invertebrates_sum_abund$TreeID<-as.character(dataset_invertebrates_sum_abund$TreeID)
 
 # The rest is the same;
 
@@ -146,6 +147,7 @@ dataset_fin <-
   )
 
 dataset_fin[is.na(dataset_fin)] <- 0
+
 
 #----------------------------------------------------------#
 # 2. save data  -----

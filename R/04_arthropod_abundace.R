@@ -211,7 +211,7 @@ ggsave(
       alpha = 1) +
     
     labs(
-      x = "Ficus species",
+      x = "Species",
       y = expression(paste("Invertebrates abundance per m" ^ 2)) )+
     scale_fill_manual(values = pallete_3) +
     scale_color_manual(values = pallete_3) +
