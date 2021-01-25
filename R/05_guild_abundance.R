@@ -300,7 +300,11 @@ glm_invertebrates_guild_chew_emmeans_treat <-
 glm_invertebrates_guild_chew_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_chew_pairwise_test_treat.csv")
+  write_csv("data/output/inv_chew_pairwise_test_treat_contrast.csv")
+
+glm_invertebrates_guild_chew_emmeans_treat$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_chew_pairwise_treat_emmeans.csv")
 
 glm_invertebrates_guild_chew_emmeans_Hab <-
   emmeans(
@@ -354,7 +358,12 @@ glm_invertebrates_guild_chew_emmeans_Hab <-
 glm_invertebrates_guild_chew_emmeans_Hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_chew_pairwise_test_Hab.csv")
+  write_csv("data/output/inv_chew_pairwise_Hab_contrast.csv")
+
+# save the pairwise test 
+glm_invertebrates_guild_chew_emmeans_Hab$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_chew_pairwise_Hab_emmeans.csv")
 
 #----------------------------------------------------------#
 # 7. PRE -----
@@ -498,9 +507,12 @@ glm_invertebrates_guild_pre_emmeans_treat <-
 glm_invertebrates_guild_pre_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_pre_pairwise_test_treat.csv")
+  write_csv("data/output/inv_pre_pairwise_treat_contrast.csv")
 
-
+glm_invertebrates_guild_pre_emmeans_treat$emmeans %>% 
+  as_tibble() %>% 
+  arrange(p.value) %>% 
+  write_csv("data/output/inv_pre_pairwise_treat_emmeans.csv")
 
 
 glm_invertebrates_guild_pre_emmeans_Hab <-
@@ -555,8 +567,13 @@ glm_invertebrates_guild_pre_emmeans_Hab <-
 glm_invertebrates_guild_pre_emmeans_Hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_pre_pairwise_test_hab.csv")
+  write_csv("data/output/inv_pre_pairwise_hab_constrast.csv")
 
+
+# save the pairwise test 
+glm_invertebrates_guild_pre_emmeans_Hab$contrasts %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_pre_pairwise_hab_emmeans.csv")
 
 #----------------------------------------------------------#
 # 8. NR -----
@@ -678,9 +695,12 @@ glm_invertebrates_guild_nr_emmeans_treat <-
 glm_invertebrates_guild_nr_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_nr_pairwise_test_treat.csv")
+  write_csv("data/output/inv_nr_pairwise_treat_constrast.csv")
 
-
+# save the pairwise test 
+glm_invertebrates_guild_nr_emmeans_treat$emmeans%>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_nr_pairwise_treat_emmeans.csv")
 
 (model_plot_nr_02 <-
     dataset_guild_nr %>% 

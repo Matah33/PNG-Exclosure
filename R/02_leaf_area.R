@@ -16,6 +16,8 @@ source("R/00_config.R")
 # 4. Leaf area exporatory figures -----
 #----------------------------------------------------------#
 
+library(see)
+
 # per treatmetns
 (ext_plot_01 <- 
    dataset_fin %>% 
@@ -152,7 +154,7 @@ ggsave(
   height = PDF_height,
   units = "in")
 
-
+library (randomForest)
 
 #----------------------------------------------------------#
 # 5. Model build -----
@@ -292,3 +294,4 @@ glm_leaf_area_emmeans$contrasts %>%
   as_tibble() %>% 
   arrange(p.value) %>% 
   write_csv("data/output/leaf_area_pairwise_test.csv")
+

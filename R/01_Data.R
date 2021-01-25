@@ -63,6 +63,8 @@ dataset_invertebrates <-
       Plot == "YAW" ~ "YAW" 
     ))
 
+
+
 # invertebrates abunance
 dataset_invertebrates_sum_abund <-
   dataset_invertebrates %>% 
@@ -75,6 +77,13 @@ dataset_invertebrates_sum_abund <-
   pivot_wider(names_from = Guild, values_from = Abundance) %>% 
   replace(is.na(.), 0)
   
+# Marketa: Didnt work for me, so I manually created the pivot table and copied through the clipboard:
+
+dataset_invertebrates_sum_abund <- read.delim("clipboard")
+dataset_invertebrates_sum_abund$TreeID<-as.character(dataset_invertebrates_sum_abund$TreeID)
+
+# The rest is the same;
+
 dataset_invertebrates_sum_abund <-
   dataset_invertebrates_sum_abund %>% 
   mutate(Total_abundance = dataset_invertebrates_sum_abund %>% 
@@ -104,6 +113,9 @@ dataset_invertebrates %>%
   ) %>% 
   ungroup()
 
+# problem with NA creating rows so again manualy
+
+
 
 # merging artropods data
 dataset_invertebrates_final <-
@@ -114,6 +126,12 @@ dataset_invertebrates_final <-
   left_join(
     dataset_invertebrates_mean_size_total,
     by = c("Plot", "Treatment", "TreeID"))
+
+dataset_invertebrates_final <- read.delim ("clipboard")
+dataset_invertebrates_final$TreeID<-as.character(dataset_invertebrates_final$TreeID)
+
+
+
 
 # 1.4 summary -----
 # merge all together
@@ -127,7 +145,7 @@ dataset_fin <-
     by = c("Plot", "Treatment", "TreeID") 
   )
 
-
+dataset_fin[is.na(dataset_fin)] <- 0
 
 #----------------------------------------------------------#
 # 2. save data  -----
@@ -136,3 +154,4 @@ dataset_fin <-
 write_csv(
   dataset_fin,
   "data/output/dataset_fin.csv")
+

@@ -229,7 +229,11 @@ glm_herbivory_damage_emmeans_hab <-
 glm_herbivory_damage_emmeans_hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_hab.csv")
+  write_csv("data/output/herbivory_pairwise_hab_contrast.csv")
+glm_herbivory_damage_emmeans_hab$emmeans %>% 
+  as_tibble() %>% 
+    write_csv("data/output/herbivory_pairwise_hab_emmeans.csv")
+
 
 (model_plot_01 <-
   glm_herbivory_damage_emmeans_hab$emmeans %>% 
@@ -291,7 +295,11 @@ glm_herbivory_damage_emmeans_Spec <-
 glm_herbivory_damage_emmeans_Spec$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_spec.csv")
+  write_csv("data/output/herbivory_pairwise_spec_contrasts.csv")
+
+glm_herbivory_damage_emmeans_Spec$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/herbivory_pairwise_spec_contrasts_emmeans.csv")
 
 (model_plot_02 <-
     glm_herbivory_damage_emmeans_Spec$emmeans %>% 
@@ -353,7 +361,11 @@ glm_herbivory_damage_emmeans_Treatment <-
 glm_herbivory_damage_emmeans_Treatment$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/herbivory_damage_pairwise_test_Treatment.csv")
+  write_csv("data/output/herbivory_pairwise_Treatment_contrast.csv")
+
+glm_herbivory_damage_emmeans_Treatment$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/herbivory_pairwise_Treatment_emmeans.csv")
 
 (model_plot_03 <-
     glm_herbivory_damage_emmeans_Treatment$emmeans %>% 

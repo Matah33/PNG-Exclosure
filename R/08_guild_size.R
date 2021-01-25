@@ -163,7 +163,7 @@ ggsave(
     facet_grid( ~ guild)+
     
     labs(
-      x = "Ficus species",
+      x = "Species",
       y = "Mean size of arthropod" )+
     scale_fill_manual(values = pallete_4) +
     scale_color_manual(values = pallete_4) +
@@ -324,9 +324,11 @@ glm_invertebrates_guild_chew_emmeans_treat <-
 glm_invertebrates_guild_chew_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_chew_pairwise_test_treat.csv")
+  write_csv("data/output/guild_size_chew_pairwise_treat_contrast.csv")
 
-
+glm_invertebrates_guild_chew_emmeans_treat$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/guild_size_chew_pairwise_treat_emmeans.csv")
 
 (model_plot_chew_02 <-
     dataset_guild_chew %>% 
@@ -369,7 +371,7 @@ glm_invertebrates_guild_chew_emmeans_treat$contrasts %>%
         jitter.width = 0.15)) +
     
     labs(
-      x = "Ficus species",
+      x = "Species",
       y = "Mean size of arthropod") +
     scale_color_manual(values = pallete_3) +
     scale_fill_manual(values = pallete_3) +
@@ -551,7 +553,11 @@ glm_invertebrates_guild_pre_emmeans_hab <-
 glm_invertebrates_guild_pre_emmeans_hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_pre_pairwise_test_hab.csv")
+  write_csv("data/output/guild_size_pre_pairwise_hab_contrast.csv")
+
+glm_invertebrates_guild_pre_emmeans_hab$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/guild_size_pre_pairwise_hab_emmeans.csv")
 
 
 
@@ -571,7 +577,7 @@ glm_invertebrates_guild_pre_emmeans_hab$contrasts %>%
         jitter.width = 0.15)) +
     
     labs(
-      x = "Ficus species",
+      x = "Species",
       y = "Mean size of arthropod") +
     scale_color_manual(values = pallete_3) +
     scale_fill_manual(values = pallete_3) +
@@ -730,9 +736,11 @@ glm_invertebrates_guild_nr_emmeans_treat <-
 glm_invertebrates_guild_nr_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_nr_pairwise_test_treat.csv")
+  write_csv("data/output/guild_size_nr_pairwise_treat_contrast.csv")
 
-
+glm_invertebrates_guild_nr_emmeans_treat$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/guild_size_nr_pairwise_treat_emmeans.csv")
 
 glm_invertebrates_guild_nr_emmeans_Hab <-
   emmeans(
@@ -786,8 +794,11 @@ glm_invertebrates_guild_nr_emmeans_Hab <-
 glm_invertebrates_guild_nr_emmeans_Hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_nr_pairwise_test_Hab.csv")
+  write_csv("data/output/guild_size_nr_pairwise_Hab_contrast.csv")
 
+glm_invertebrates_guild_nr_emmeans_Hab$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/guild_size_nr_pairwise_Hab_emmeans.csv")
 
 
 (model_plot_nr_03 <-
@@ -807,7 +818,7 @@ glm_invertebrates_guild_nr_emmeans_Hab$contrasts %>%
     
     
     labs(
-      x = "Ficus Species",
+      x = "Species",
       y = "Mean size of arthropod") +
     scale_color_manual(values = pallete_3) +
     scale_fill_manual(values = pallete_3) +
@@ -1030,12 +1041,14 @@ glm_invertebrates_guild_suc_emmeans_hab <-
 
 
 # save the pairwise test 
+glm_invertebrates_guild_suc_emmeans_hab$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/guild_size_suc_pairwise_hab_emmeans.csv")
+
 glm_invertebrates_guild_suc_emmeans_hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/guild_size_suc_pairwise_test_hab.csv")
-
-
+  write_csv("data/output/guild_size_suc_pairwise_hab_contrast.csv")
 
 (model_plot_suc_03 <-
     dataset_guild_suc %>% 
@@ -1053,7 +1066,7 @@ glm_invertebrates_guild_suc_emmeans_hab$contrasts %>%
         jitter.width = 0.15)) +
     
     labs(
-      x = "Ficus species",
+      x = "Species",
       y = "Mean size of arthropod") +
     scale_color_manual(values = pallete_3) +
     scale_fill_manual(values = pallete_3) +

@@ -315,8 +315,11 @@ ggsave(
 glm_mean_size_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/mean_size_pairwise_test_treat.csv")
+  write_csv("data/output/mean_size_pairwise_treat_contrast.csv")
 
+glm_mean_size_emmeans_treat$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/mean_size_pairwise_treat_emmeans.csv")
 
 glm_mean_size_emmeans_hab <-
   emmeans(
@@ -374,7 +377,11 @@ ggsave(
 glm_mean_size_emmeans_hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/mean_size_pairwise_test_hab.csv")
+  write_csv("data/output/mean_size_pairwise_hab_contrast.csv")
+
+glm_mean_size_emmeans_hab$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/mean_size_pairwise_hab_emmeans.csv")
 
 
 glm_mean_size_emmeans_Spec <-
@@ -414,7 +421,7 @@ glm_mean_size_emmeans_Spec <-
       size = 3) +
     
     labs(
-      x = "Ficus Species",
+      x = "Species",
       y = "Mean size of arthropod (mm)" ) +
     scale_color_manual(values = pallete_3) +
     theme(
@@ -433,5 +440,8 @@ ggsave(
 glm_mean_size_emmeans_Spec$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/mean_size_pairwise_test_Spec.csv")
+  write_csv("data/output/mean_size_pairwise_Spec_contrast.csv")
 
+glm_mean_size_emmeans_Spec$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/mean_size_pairwise_Spec_emmeans.csv")

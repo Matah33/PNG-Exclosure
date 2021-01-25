@@ -352,8 +352,12 @@ ggsave(
 glm_invertebrates_abundance_emmeans_Hab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_abundance_pairwise_test_Hab.csv")
+  write_csv("data/output/inv_abundance_pairwise_Hab_contrast.csv")
 
+
+glm_invertebrates_abundance_emmeans_Hab$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_abundance_pairwise_Hab_emmeans.csv")
 
 
 # Treatment
@@ -384,8 +388,8 @@ glm_invertebrates_abundance_emmeans_Treatment <-
     
     geom_errorbar(
       aes(
-        ymin =  asymp.LCL,
-        ymax = asymp.UCL),
+        ymin = lower.CL,
+        ymax = upper.CL),
       position = position_dodge(width = 0.5, preserve = "single"),
       width = 0.2,
       size = 1)+
@@ -418,3 +422,4 @@ glm_invertebrates_abundance_emmeans_Treatment$contrasts %>%
   as_tibble() %>% 
   arrange(p.value) %>% 
   write_csv("data/output/invertebrates_abundance_pairwise_test_Treatment.csv")
+

@@ -75,7 +75,7 @@ summary(dataset_guild_ratio)
      text = element_text(size = text_size),
      legend.position = "right"))
 
-# per haitat
+ # per haitat
 (ext_plot_02 <- 
     dataset_guild_ratio %>% 
     group_by(Hab, guild) %>% 
@@ -307,7 +307,11 @@ glm_invertebrates_guild_chew_emmeans_HabSpec <-
 glm_invertebrates_guild_chew_emmeans_HabSpec$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_chew_pairwise_test_HabSpec.csv")
+  write_csv("data/output/inv_ratio_chew_pairwise_HabSpec_contrast.csv")
+
+glm_invertebrates_guild_chew_emmeans_HabSpec$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_ratio_chew_pairwise_HabSpec_emmeans.csv")
 
 
 model_plot_chew_sum <- 
@@ -443,7 +447,11 @@ glm_invertebrates_guild_nr_emmeans_treat <-
 glm_invertebrates_guild_nr_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_nr_pairwise_test_treat.csv")
+  write_csv("data/output/inv_ratio_nr_pairwise_treat_contrast.csv")
+
+glm_invertebrates_guild_nr_emmeans_treat$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_ratio_nr_pairwise_treat_emmeans.csv")
 
 
 glm_invertebrates_guild_nr_emmeans_HabSpec <-
@@ -499,7 +507,11 @@ glm_invertebrates_guild_nr_emmeans_HabSpec <-
 glm_invertebrates_guild_nr_emmeans_HabSpec$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_nr_pairwise_test_HabSpec.csv")
+  write_csv("data/output/inv_ratio_nr_pairwise_HabSpec.csv")
+
+glm_invertebrates_guild_nr_emmeans_HabSpec$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_ratio_nr_pairwise_HabSpec_emmeans.csv")
 
 
 model_plot_nr_sum <- 
@@ -722,7 +734,12 @@ glm_invertebrates_guild_pre_emmeans_SpecTreat <-
 glm_invertebrates_guild_pre_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_pre_pairwise_test_SpecTreat.csv")
+  write_csv("data/output/inv_ratio_pre_pairwise_SpecTreat_contrast.csv")
+
+
+glm_invertebrates_guild_pre_emmeans_treat$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_ratio_pre_pairwise_SpecTreat_emmeans.csv")
 
 
 model_plot_pre_sum <- 
@@ -866,7 +883,12 @@ glm_invertebrates_guild_suc_emmeans_SpecTreat <-
 glm_invertebrates_guild_suc_emmeans_SpecTreat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_suc_pairwise_test_SpecTreat.csv")
+  write_csv("data/output/inv_ratio_suc_pairwise_SpecTreat_contrast.csv")
+
+
+glm_invertebrates_guild_suc_emmeans_SpecTreat$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_ratio_suc_pairwise_SpecTreat_emmeans.csv")
 
 glm_invertebrates_guild_suc_emmeans_SpecHab <-
   emmeans(
@@ -921,9 +943,11 @@ glm_invertebrates_guild_suc_emmeans_SpecHab <-
 glm_invertebrates_guild_suc_emmeans_SpecHab$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_ratio_suc_pairwise_test_SpecHab.csv")
+  write_csv("data/output/inv_ratio_suc_pairwise_SpecHab_contrast.csv")
 
-
+glm_invertebrates_guild_suc_emmeans_SpecHab$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_ratio_suc_pairwise_SpecHab_emmeans.csv")
 
 model_plot_suc_sum <- 
   ggarrange(
@@ -1007,3 +1031,4 @@ ggsave(
   width = PDF_width,
   height = PDF_height,
   units = "in")
+
