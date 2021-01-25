@@ -427,3 +427,4 @@ glm_invertebrates_abundance_emmeans_Treatment$contrasts %>%
 glm_invertebrates_abundance_emmeans_Treatment$emmeans %>% 
   as_tibble() %>% 
   write_csv("data/output/inv_abundance_pairwise_Treatment_emmeans.csv")
+

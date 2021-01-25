@@ -16,7 +16,7 @@ source("R/00_config.R")
 #----------------------------------------------------------#
 
 
-# per treatmetns
+# per treatments
 (ext_plot_01 <- 
    dataset_fin %>% 
    ggplot(
@@ -136,7 +136,7 @@ ggsave(
       alpha = 1) +
     
     labs(
-      x = "Ficus species",
+      x = "Species",
       y = "Mean herbivory damage (%)" )+
     scale_fill_manual(values = pallete_3)+
     scale_color_manual(values = pallete_3)+
@@ -169,7 +169,7 @@ dataset_herbivory_damage <-
 summary(dataset_herbivory_damage)
 
 
-# cretae full model with all interaction
+# create full model with all interaction
 glm_herbivory_damage_full <-
   glmmTMB(
     herbivory_percentage_mean ~ Hab * Treatment * Spec,

@@ -54,6 +54,10 @@ write_csv(
   dataset_desing,
   "data/output/dataset_desing.csv")
 
+write_csv(
+  dataset_herbivory_sum,
+  "data/output/dataset_herbivory_sum .csv")
+
 # 1.3 invertebrates data -----
 dataset_invertebrates <-  
   readxl::read_xlsx("data/input/data_input_clean.xlsx","Invertebrates")  %>% 
@@ -153,7 +157,7 @@ dataset_fin[is.na(dataset_fin)] <- 0
 
 
 
-#merged dataset_desing from "output"+ manually created inv_data
+#merged dataset_desing from "output"+ dataset_herbivory_sum + manually created inv_data
 dataset_fin<-read.delim("clipboard") 
 
 #----------------------------------------------------------#

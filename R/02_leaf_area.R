@@ -18,7 +18,7 @@ source("R/00_config.R")
 
 library(see)
 
-# per treatmetns
+# per treatments
 (ext_plot_01 <- 
    dataset_fin %>% 
    ggplot(
@@ -293,5 +293,8 @@ ggsave(
 glm_leaf_area_emmeans$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/leaf_area_pairwise_test.csv")
+  write_csv("data/output/leaf_area_pairwise_contrast.csv")
 
+glm_leaf_area_emmeans$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/leaf_area_pairwise_emmeans.csv")

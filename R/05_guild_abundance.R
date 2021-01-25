@@ -228,7 +228,7 @@ glm_invertebrates_guild_chew_dd %>%
   filter(delta < 2 ) %>% 
   View()
 
-#changed from Hab+Treatment into Treatment
+#changed from Hab+Treatment into Treatment !!!!!!!!!!!!!!
 
 glm_invertebrates_guild_chew_select <- 
   glmmTMB(
@@ -307,7 +307,7 @@ glm_invertebrates_guild_chew_emmeans_treat$emmeans %>%
   as_tibble() %>% 
   write_csv("data/output/inv_chew_pairwise_treat_emmeans.csv")
 
-#Habitat analysis removed
+##### Habitat analysis removed ####
 
 
 #glm_invertebrates_guild_chew_emmeans_Hab <-
