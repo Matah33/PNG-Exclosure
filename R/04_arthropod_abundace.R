@@ -16,7 +16,7 @@ source("R/00_config.R")
 # 4. calculation of Abundance -----
 #----------------------------------------------------------#
 
-# exploraoty figures
+# exploratory figures
 (ext_plot_01 <- 
    dataset_fin %>%
    ggplot(
@@ -239,7 +239,7 @@ dataset_abundance_model <-
 
 summary(dataset_abundance_model)
 
-# cretae full model with all interaction
+# create full model with all interaction
 glm_invertebrates_abundance_full <-
   glmmTMB(
     abundance_per_leaf_area ~ Hab * Treatment * Spec,
@@ -254,7 +254,7 @@ check_distribution(glm_invertebrates_abundance_full)
 check_heteroscedasticity(glm_invertebrates_abundance_full) 
 qplot(residuals(glm_invertebrates_abundance_full))
 
-# compute all posible combinations
+# compute all possible combinations
 glm_invertebrates_abundance_dd <- 
   MuMIn::dredge(glm_invertebrates_abundance_full,
                 trace = TRUE)
@@ -285,6 +285,7 @@ model_performance(glm_invertebrates_abundance_select)
 check_heteroscedasticity(glm_invertebrates_abundance_select)
 qplot(residuals(glm_invertebrates_abundance_select))
 
+# stale doporucuje lognormal, ale ma problem s heteroskedasticitou 
 
 # 6.1 Model plots  -----
 
@@ -421,5 +422,8 @@ ggsave(
 glm_invertebrates_abundance_emmeans_Treatment$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
-  write_csv("data/output/invertebrates_abundance_pairwise_test_Treatment.csv")
+  write_csv("data/output/inv_abundance_pairwise_Treatment_contrast.csv")
 
+glm_invertebrates_abundance_emmeans_Treatment$emmeans %>% 
+  as_tibble() %>% 
+  write_csv("data/output/inv_abundance_pairwise_Treatment_emmeans.csv")

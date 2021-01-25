@@ -146,8 +146,15 @@ dataset_fin <-
     by = c("Plot", "Treatment", "TreeID") 
   )
 
+
 dataset_fin[is.na(dataset_fin)] <- 0
 
+# This created artificial values in the table, therefore I created the dataset manually->
+
+
+
+#merged dataset_desing from "output"+ manually created inv_data
+dataset_fin<-read.delim("clipboard") 
 
 #----------------------------------------------------------#
 # 2. save data  -----
