@@ -420,14 +420,14 @@ glm_invertebrates_guild_pre_dd %>%
 
 
 glm_invertebrates_guild_pre_m1 <- 
-  glmmTMB(
+  glm(
     abundance_per_leaf_area ~ Hab,
     data = dataset_guild_pre,
     family = gaussian(link = "log"),
     na.action = "na.fail")
 
 glm_invertebrates_guild_pre_m2 <- 
-  glmmTMB(
+  glm(
     abundance_per_leaf_area ~ Hab + Treatment,
     data = dataset_guild_pre,
     family = gaussian(link = "log"),
@@ -445,7 +445,7 @@ compare_performance(
   as_tibble() %>% 
   write_csv("data/output/inv_pre_model_performance_comparison.csv")
 
-glm_invertebrates_guild_pre_select <- glm_invertebrates_guild_pre_m2
+glm_invertebrates_guild_pre_select <- glm_invertebrates_guild_pre_m1
 
 
 summary(glm_invertebrates_guild_pre_select)
@@ -457,14 +457,14 @@ qplot(residuals(glm_invertebrates_guild_pre_select))
 # 7.2. plot -----
 
 # calculate emmeans
-glm_invertebrates_guild_pre_emmeans_treat <-
+#glm_invertebrates_guild_pre_emmeans_treat <-
   emmeans(
     glm_invertebrates_guild_pre_select,
     pairwise ~ Treatment,
     type = "response") 
 
 
-(model_plot_pre_01 <-
+#(model_plot_pre_01 <-
     glm_invertebrates_guild_pre_emmeans_treat$emmeans %>% 
     as_tibble() %>% 
     ggplot(
@@ -508,12 +508,12 @@ glm_invertebrates_guild_pre_emmeans_treat <-
 
 
 # save the pairwise test 
-glm_invertebrates_guild_pre_emmeans_treat$contrasts %>% 
+#glm_invertebrates_guild_pre_emmeans_treat$contrasts %>% 
   as_tibble() %>% 
   arrange(p.value) %>% 
   write_csv("data/output/inv_pre_pairwise_treat_contrast.csv")
 
-glm_invertebrates_guild_pre_emmeans_treat$emmeans %>% 
+#glm_invertebrates_guild_pre_emmeans_treat$emmeans %>% 
   as_tibble() %>% 
   write_csv("data/output/inv_pre_pairwise_treat_emmeans.csv")
 
@@ -545,8 +545,8 @@ glm_invertebrates_guild_pre_emmeans_Hab <-
     
     geom_errorbar(
       aes(
-        ymin =  lower.CL,
-        ymax = upper.CL),
+        ymin =  asymp.LCL,
+        ymax = asymp.UCL),
       width = 0.2,
       position = position_dodge(width = 0.5, preserve = "single"),
       size = 1)+

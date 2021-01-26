@@ -272,7 +272,7 @@ glm_invertebrates_abundance_dd %>%
 
 
 glm_invertebrates_abundance_select <-   
-  glmmTMB(
+  glm(
     abundance_per_leaf_area ~ Hab + Treatment ,
     data = dataset_abundance_model,
     family = gaussian(link = "log"),

@@ -205,7 +205,7 @@ glm_herbivory_damage_select <-
   glmmTMB(
     herbivory_percentage_mean ~ Hab + Spec + Treatment,
     data = dataset_herbivory_damage,
-    family = "beta_family",
+    family = beta_family(),
     na.action = "na.fail")
 
 summary(glm_herbivory_damage_select)

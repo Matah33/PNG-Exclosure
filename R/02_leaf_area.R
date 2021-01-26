@@ -139,7 +139,7 @@ ggsave(
       alpha = 1) +
     
     labs(
-      x = "Ficus species",
+      x = "Species",
       y = expression(paste("Total leaf area per tree individual (m" ^ 2,")")) )+
     scale_fill_manual(values = pallete_3)+
     scale_color_manual(values = pallete_3)+
@@ -203,13 +203,13 @@ glm_leaf_area_dd %>%
 
 # fit the all the models with similar parsimony
 glm_leaf_m1 <- 
-  glmmTMB(leaf_area_total ~ Hab,
+  glm(leaf_area_total ~ Hab,
       data = dataset_leaf_area,
       family = Gamma(),
       na.action = "na.fail")
 
 glm_leaf_m2 <- 
-  glmmTMB(leaf_area_total ~ Hab + Treatment,
+  glm(leaf_area_total ~ Hab + Treatment,
       data = dataset_leaf_area,
       family = Gamma(),
       na.action = "na.fail")
@@ -262,8 +262,8 @@ glm_leaf_area_emmeans <-
   
   geom_errorbar(
     aes(
-      ymin =  lower.CL,
-      ymax = upper.CL),
+      ymin =  asymp.LCL,
+      ymax = asymp.UCL),
     width=0.2,
     position = position_dodge(width = 0.5, preserve = "single"),
     size = 1)+
@@ -298,3 +298,4 @@ glm_leaf_area_emmeans$contrasts %>%
 glm_leaf_area_emmeans$emmeans %>% 
   as_tibble() %>% 
   write_csv("data/output/leaf_area_pairwise_emmeans.csv")
+
